@@ -72,6 +72,7 @@ bond_add() {
 
     echo
     echo "# Next, set IP address for \"${BOND_IF_NAME}\". e.g. nmcli-cli-ipv4 \"${BOND_IF_NAME}\" ..."
+    echo "# Or, add a bridge interface for \"${BOND_IF_NAME}\". e.g. nmcli-cli-vlan-add \"${BOND_IF_NAME}.xxx\" xxx \"${BOND_IF_NAME}\""
 }
 
 # Main
