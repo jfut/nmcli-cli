@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# nmcli-tool-slave-list
+# nmcli-cli-slave-list
 
 NAME=$1
 

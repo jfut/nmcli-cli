@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# nmcli-tool-bridge-add
+# nmcli-cli-bridge-add
 
 BRDIGE_IF_NAME=$1
 IF_SLAVE=$2

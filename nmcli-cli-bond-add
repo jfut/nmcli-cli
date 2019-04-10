@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# nmcli-tool-bond-add
+# nmcli-cli-bond-add
 
 BOND_IF_NAME=$1
 IF_SLAVE1=$2

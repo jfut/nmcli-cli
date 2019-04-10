@@ -1,54 +1,111 @@
 #!/bin/bash
 #
-# nmcli-tool-ip-copy
+# nmcli-cli-ipv4-copy
 
-SRC_NAME=$1
-DEST_NAME=$2
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${DEST_NAME}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 SRC_NAME DEST_NAME
+    $0 [-n] [-x] SRC_IF_NAME DEST_IF_NAME
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
+
+    Examples:
 
         $0 eno1 bond1
         $0 bond1 br1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface: src
-nmcli connection show "${SRC_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${SRC_NAME} not found."
-    exit 1
-fi
+check() {
+    local SRC_IF_NAME=${1:-}
+    local DEST_IF_NAME=${2:-}
 
-# Check interface: dest
-nmcli connection show "${DEST_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${DEST_NAME} not found."
-    exit 1
-fi
+    # Check interface: src
+    nmcli connection show "${SRC_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Source interface "${SRC_IF_NAME}" not found."
+        exit 1
+    fi
 
-# IP
-SRC_IP_SUBNET=$(nmcli connection show "${SRC_NAME}" | grep "^ipv4.addresses:" | awk -e '{ print $2 }' | tr -d '-')
-echo nmcli connection modify \"${DEST_NAME}\" ipv4.addresses \"${SRC_IP_SUBNET}\"
+    # Check interface: dest
+    nmcli connection show "${DEST_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Destination interface "${DEST_IF_NAME}" not found."
+        exit 1
+    fi
+}
 
-# Method
-SRC_METHOD=$(nmcli connection show "${SRC_NAME}" | grep "^ipv4.method:" | awk -e '{ print $2 }' | tr -d '-')
-echo nmcli connection modify \"${DEST_NAME}\" ipv4.method \"${SRC_METHOD}\"
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
 
-# DNS
-SRC_DNS=$(nmcli connection show "${SRC_NAME}" | grep "^ipv4.dns:" | awk -e '{ print $2 }' | tr -d '-')
-echo nmcli connection modify \"${DEST_NAME}\" ipv4.dns \"${SRC_DNS}\"
+ipv4_copy() {
+    local SRC_IF_NAME=${1:-}
+    local DEST_IF_NAME=${2:-}
 
-# Gateway
-SRC_GATEWAY=$(nmcli connection show "${SRC_NAME}" | grep "^ipv4.gateway:" | awk -e '{ print $2 }' | tr -d '-')
-echo nmcli connection modify \"${DEST_NAME}\" ipv4.gateway \"${SRC_GATEWAY}\"
+    # IP
+    SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.addresses:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.addresses \"${SRC_IP_SUBNET}\"
+
+    # Method
+    SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.method:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.method \"${SRC_METHOD}\"
+
+    # DNS
+    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.dns:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.dns \"${SRC_DNS}\"
+
+    # Gateway
+    SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.gateway:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.gateway \"${SRC_GATEWAY}\"
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 0 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    ipv4_copy "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 

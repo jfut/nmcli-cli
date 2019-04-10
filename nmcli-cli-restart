@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# nmcli-tool-restart
+# nmcli-cli-restart
 
 IF_NAME=$1
 

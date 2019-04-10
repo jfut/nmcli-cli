@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# nmcli-tool-vlan-add
+# nmcli-cli-vlan-add
 
 VLAN_IF_NAME=$1
 IF_NAME=$2

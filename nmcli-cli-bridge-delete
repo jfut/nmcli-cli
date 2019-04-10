@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# nmcli-tool-bridge-delete
+# nmcli-cli-bridge-delete
 
 BRIDGE_NAME=$1
 
