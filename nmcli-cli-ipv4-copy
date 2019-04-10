@@ -68,13 +68,13 @@ ipv4_copy() {
     SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.method:" | awk -e '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.method \"${SRC_METHOD}\"
 
-    # DNS
-    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.dns:" | awk -e '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.dns \"${SRC_DNS}\"
-
     # Gateway
     SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.gateway:" | awk -e '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.gateway \"${SRC_GATEWAY}\"
+
+    # DNS
+    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.dns:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.dns \"${SRC_DNS}\"
 
     echo
     echo "# Next, change IP address for \"${SRC_IF_NAME}\"."
