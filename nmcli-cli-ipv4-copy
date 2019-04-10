@@ -15,7 +15,6 @@ Usage:
         -x Run command (Default: echo only)
 
     Examples:
-
         $0 eno1 bond1
         $0 bond1 br1
 
