@@ -2,71 +2,111 @@
 #
 # nmcli-cli-bond-add
 
-BOND_IF_NAME=$1
-IF_SLAVE1=$2
-IF_SLAVE2=$3
-BOND_OPTIONS=$4
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${BOND_OPTIONS}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 NEW_BOND_IF_NAME IF_SLAVE1 IF_SLAVE2 BOND_OPTIONS
+    $0 [-n] [-x] NEW_BOND_IF_NAME BOND_OPTIONS IF_SLAVE1 IF_SLAVE2 [IF_SLAVE3...]
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
-        $0 bond1 eno1 ens2f0 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3
-        $0 bond1 eno1 ens2f0 mode=active-backup
+    Examples:
+        $0 bond1 mode=active-backup eno1 ens2f0
+        $0 bond1 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3 eno1 eno3 ens2f0
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check new bond interface
-nmcli connection show "${BOND_IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -eq 0 ]]; then
-    echo "Error: Interface ${BOND_IF_NAME} already exists."
-    exit 1
-fi
+check() {
+    local BOND_IF_NAME=${1:-}
 
-# Check interface: Slave 1
-nmcli connection show "${IF_SLAVE1}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${IF_SLAVE1} not found."
-    exit 1
-fi
+    # Check new bond interface
+    nmcli connection show "${BOND_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -eq 0 ]]; then
+        echo "Error: Target bond interface \"${BOND_IF_NAME}\" already exists."
+        exit 1
+    fi
 
-# Check interface: Slave 2
-nmcli connection show "${IF_SLAVE2}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${IF_SLAVE2} not found."
-    exit 1
-fi
+    # Check slave interfaces
+    shift 2
+    for IF_SLAVE in "${@}"; do
+        nmcli connection show "${IF_SLAVE}" > /dev/null 2>&1
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: Slave interface \"${IF_SLAVE}\" not found."
+            exit 1
+        fi
+    done
+}
 
-# Bonding
-echo nmcli connection add type bond autoconnect yes con-name \"${BOND_IF_NAME}\" ifname \"${BOND_IF_NAME}\"
-# nmcli connection add type bond autoconnect yes con-name "${BOND_IF_NAME}" ifname "${BOND_IF_NAME}"
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
 
-# Slave 1
-echo nmcli connection add type bond-slave autoconnect yes ifname \"${IF_SLAVE1}\" master \"${BOND_IF_NAME}\"
-# nmcli connection add type bond-slave autoconnect yes ifname "${IF_SLAVE1}" master "${BOND_IF_NAME}"
+bond_add() {
+    local BOND_IF_NAME=${1:-}
+    local BOND_OPTIONS=${2:-}
 
-# Slave 2
-echo nmcli connection add type bond-slave autoconnect yes ifname \"${IF_SLAVE2}\" master \"${BOND_IF_NAME}\"
-# nmcli connection add type bond-slave autoconnect yes ifname "${IF_SLAVE2}" master "${BOND_IF_NAME}"
+    # Bonding
+    echo_or_execute nmcli connection add type bond \
+        bond.options \"${BOND_OPTIONS}\" \
+        autoconnect yes ipv4.method disabled ipv6.method ignore \
+        con-name \"${BOND_IF_NAME}\" ifname \"${BOND_IF_NAME}\"
 
-# Bonding Options
-echo nmcli connection modify \"${BOND_IF_NAME}\" bond.options \"${BOND_OPTIONS}\"
-# nmcli connection modify "${BOND_IF_NAME}" bond.options "${BOND_OPTIONS}"
+    # Add slave interfaces
+    shift 2
+    for IF_SLAVE in "${@}"; do
+        echo_or_execute nmcli connection modify \"${IF_SLAVE}\" connection.autoconnect no
+        echo_or_execute nmcli connection add type bond-slave autoconnect yes ifname \"${IF_SLAVE}\" master \"${BOND_IF_NAME}\"
+    done
 
-# autoconnect no: Slave 1
-echo nmcli connection modify \"${IF_SLAVE1}\" connection.autoconnect no
-# nmcli connection modify "${IF_SLAVE1}" connection.autoconnect no
+    echo
+    echo "# Next, set IP address for \"${BOND_IF_NAME}\". e.g. nmcli-cli-ipv4 \"${BOND_IF_NAME}\" ..."
+}
 
-# autoconnect no: Slave 2
-echo nmcli connection modify \"${IF_SLAVE2}\" connection.autoconnect no
-# nmcli connection modify "${IF_SLAVE2}" connection.autoconnect no
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 3 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    bond_add "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 

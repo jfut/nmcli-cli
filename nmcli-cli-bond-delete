@@ -2,41 +2,94 @@
 #
 # nmcli-cli-bond-delete
 
-BOND_IF_NAME=$1
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${BOND_IF_NAME}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 BOND_IF_NAME
+    $0 [-n] [-x] BOND_IF_NAME
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
+    Examples:
         $0 bond1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface: Slave 1
-nmcli connection show "${BOND_IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${BOND_IF_NAME} not found."
-    exit 1
-fi
+check() {
+    local BOND_IF_NAME=${1:-}
 
-# Find slave interfaces
-SLAVE_LIST=$(grep "^MASTER=${BOND_IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
+    # Check bond interface
+    nmcli connection show "${BOND_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Target bond interface \"${BOND_IF_NAME}\" not found."
+        exit 1
+    fi
+}
 
-# Delete slave interfaces
-for i in ${SLAVE_LIST}
-do
-    echo nmcli connection delete \"${i}\"
-    # nmcli connection delete "${i}"
-done
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
 
-# Delete bonding interface
-echo nmcli connection delete \"${BOND_IF_NAME}\"
-# nmcli connection delete "${BOND_IF_NAME}"
+bond_delete() {
+    local BOND_IF_NAME=${1:-}
+
+    # Find slave interfaces
+    SLAVE_LIST=$(grep "^MASTER=${BOND_IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
+
+    # Delete slave interfaces
+    for i in ${SLAVE_LIST}
+    do
+        echo_or_execute nmcli connection delete \"${i}\"
+    done
+
+    # Delete bond interface
+    echo_or_execute nmcli connection delete \"${BOND_IF_NAME}\"
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 0 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    bond_delete "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 
