@@ -1,6 +1,11 @@
 #!/bin/bash
 #
 # nmcli-cli-autoconnect-set
+#
+# Copyright (c) 2019 Jun Futagawa (jfut)
+#
+# This software is released under the MIT License.
+# http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
