@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+# nmcli-tool-ip
+
+IF_NAME=$1
+IF_METHOD=$2
+IF_IP_SUBNET=$3
+IF_GATEWAY=$4
+IF_DNS=$5
+
+if [[ -z "${IF_METHOD}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 NAME dhcp|manual|disabled IP_SUBNET [GATEWAY] [DNS]
+
+    EXAMPLES
+
+        $0 eno1 dhcp
+        $0 eno1 manual 192.168.1.101/24 192.168.1.1 "192.168.1.1,10.0.0.2"
+        $0 eno1 manual 192.168.1.101/24
+        $0 eno1 disabled
+
+_EOF_
+    exit 1
+fi
+
+# Check interface
+nmcli connection show "${IF_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${IF_NAME} not found."
+    exit 1
+fi
+
+if [[ "${IF_METHOD}" = "dhcp" ]]; then
+    # --- DHCP ---
+
+    # DNS
+    echo nmcli connection modify \"${IF_NAME}\" ipv4.dns \"\"
+    # nmcli connection modify "{IF_NAME}" ipv4.dns ""
+
+    # Gateway
+    echo nmcli connection modify \"${IF_NAME}\" ipv4.gateway \"\"
+    # nmcli connection modify "${IF_NAME}" ipv4.gateway ""
+
+    # IP
+    echo nmcli connection modify \"${IF_NAME}\" ipv4.addresses \"\" ipv4.method auto
+    # nmcli connection modify "${IF_NAME}" ipv4.addresses "" ipv4.method auto
+
+elif [[ "${IF_METHOD}" = "manual" ]]; then
+    # --- Static IP ---
+
+    # IP
+    echo nmcli connection modify \"${IF_NAME}\" ipv4.addresses \"${IF_IP_SUBNET}\" ipv4.method manual
+    # nmcli connection modify "${IF_NAME}" ipv4.addresses "${IF_IP_SUBNET}" ipv4.method manual
+
+    # Option: Gateway
+    if [[ ! -z "${IF_GATEWAY}" ]]; then
+        echo nmcli connection modify \"${IF_NAME}\" ipv4.gateway \"${IF_GATEWAY}\"
+        # nmcli connection modify "${IF_NAME}" ipv4.gateway "${IF_GATEWAY}"
+    fi
+
+    # Option: DNS
+    if [[ ! -z "${IF_DNS}" ]]; then
+        echo nmcli connection modify \"${IF_NAME}\" ipv4.dns \"${IF_DNS}\"
+        # nmcli connection modify "${IF_NAME}" ipv4.dns "${IF_DNS}"
+    fi
+elif [[ "${IF_METHOD}" = "disabled" ]]; then
+    # --- disabled: No IP ---
+
+    # IP
+    echo nmcli connection modify \"${IF_NAME}\" ipv4.addresses \"${IF_IP_SUBNET}\" ipv4.method disabled ipv6.method ignore
+    # nmcli connection modify "${IF_NAME}" ipv4.addresses "${IF_IP_SUBNET}" ipv4.method disabled ipv6.method ignore
+
+    # Option: Gateway
+    if [[ ! -z "${IF_GATEWAY}" ]]; then
+        echo nmcli connection modify \"${IF_NAME}\" ipv4.gateway \"${IF_GATEWAY}\"
+        # nmcli connection modify "${IF_NAME}" ipv4.gateway "${IF_GATEWAY}"
+    fi
+
+    # Option: DNS
+    if [[ ! -z "${IF_DNS}" ]]; then
+        echo nmcli connection modify \"${IF_NAME}\" ipv4.dns \"${IF_DNS}\"
+        # nmcli connection modify "${IF_NAME}" ipv4.dns "${IF_DNS}"
+    fi
+else
+    echo "Error: dhcp|manual|disabled method invalid."
+    exit 1
+fi
+

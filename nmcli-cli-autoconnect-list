@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# nmcli-cli-autoconnect-list
+
+ON_OFF=$1
+
+if [[ -z "${ON_OFF}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 on|off
+
+    EXAMPLES
+
+        $0 off
+        $0 on
+
+_EOF_
+    exit 1
+fi
+
+if [[ "${ON_OFF}" = on ]]; then
+    ON_OFF="yes"
+elif [[ "${ON_OFF}" = off ]]; then
+    ON_OFF="no"
+else
+    echo "Error: option invalid: ${ON_OFF}"
+    exit 1
+fi
+
+# Bond: Find ONBOOT interfaces
+grep "^ONBOOT=${ON_OFF}" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g'
+

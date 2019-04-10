@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# nmcli-tool-bond-delete
+
+BOND_NAME=$1
+
+if [[ -z "${BOND_NAME}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 BOND_NAME
+
+    EXAMPLES
+
+        $0 bond1
+
+_EOF_
+    exit 1
+fi
+
+# Check interface: Slave 1
+nmcli connection show "${BOND_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${BOND_NAME} not found."
+    exit 1
+fi
+
+# Find slave interfaces
+SLAVE_LIST=$(grep "^MASTER=${BOND_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
+
+# Delete slave interfaces
+for i in ${SLAVE_LIST}
+do
+    echo nmcli connection delete \"${i}\"
+    # nmcli connection delete "${i}"
+done
+
+# Delete bonding interface
+echo nmcli connection delete \"${BOND_NAME}\"
+# nmcli connection delete "${BOND_NAME}"
+

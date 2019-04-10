@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# nmcli-tool-bridge-add
+
+BRDIGE_NAME=$1
+BRDIGE_SLAVE=$2
+
+if [[ -z "${BRDIGE_SLAVE}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 NEW_BRDIGE_NAME SLAVE_NAME
+
+    EXAMPLES
+
+        $0 br1 eno1
+        $0 br1 bond1
+
+_EOF_
+    exit 1
+fi
+
+# Check interface: Slave 1
+nmcli connection show "${BRDIGE_SLAVE}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${BRDIGE_SLAVE} not found."
+    exit 1
+fi
+
+# Bridge: STP: No, Forward Delay: 0
+echo nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 con-name \"${BRDIGE_NAME}\" ifname \"${BRDIGE_NAME}\"
+# nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 nocon-name "${BRDIGE_NAME}" ifname "${BRDIGE_NAME}"
+
+# Slave
+echo nmcli connection modify \"${BRDIGE_SLAVE}\" connection.slave-type bridge connection.master \"${BRDIGE_NAME}\"
+
+# Option: IP
+echo
+echo "# -------------------------------------------------------"
+echo "# If it is bridge interface with no IP address, then:"
+./nmcli-cli-ipv4 br.100 disabled

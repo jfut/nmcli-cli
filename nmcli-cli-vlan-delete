@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# nmcli-tool-bond-delete
+
+VLAN_IF_NAME=$1
+
+if [[ -z "${VLAN_IF_NAME}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 VLAN_IF_NAME
+
+    EXAMPLES
+
+        $0 bond1
+
+_EOF_
+    exit 1
+fi
+
+# Check interface: Slave 1
+nmcli connection show "${VLAN_IF_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${VLAN_IF_NAME} not found."
+    exit 1
+fi
+
+# Delete vlan interface
+echo nmcli connection delete \"${VLAN_IF_NAME}\"
+# nmcli connection delete "${VLAN_IF_NAME}"
+

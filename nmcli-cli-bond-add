@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# nmcli-tool-bond-add
+
+BOND_NAME=$1
+BOND_SLAVE1=$2
+BOND_SLAVE2=$3
+BOND_OPTIONS=$4
+
+if [[ -z "${BOND_OPTIONS}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 NEW_BOND_NAME SLAVE1 SLAVE2 BOND_OPTIONS
+
+    EXAMPLES
+
+        $0 bond1 eno1 ens2f0 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3
+        $0 bond1 eno1 ens2f0 mode=active-backup
+
+_EOF_
+    exit 1
+fi
+
+# Check interface: Slave 1
+nmcli connection show "${BOND_SLAVE1}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${BOND_SLAVE1} not found."
+    exit 1
+fi
+
+# Check interface: Slave 2
+nmcli connection show "${BOND_SLAVE2}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${BOND_SLAVE2} not found."
+    exit 1
+fi
+
+# Bonding
+echo nmcli connection add type bond autoconnect yes con-name \"${BOND_NAME}\" ifname \"${BOND_NAME}\"
+# nmcli connection add type bond autoconnect yes con-name "${BOND_NAME}" ifname "${BOND_NAME}"
+
+# Slave 1
+echo nmcli connection add type bond-slave autoconnect yes ifname \"${BOND_SLAVE1}\" master \"${BOND_NAME}\"
+# nmcli connection add type bond-slave autoconnect yes ifname "${BOND_SLAVE1}" master "${BOND_NAME}"
+
+# Slave 2
+echo nmcli connection add type bond-slave autoconnect yes ifname \"${BOND_SLAVE2}\" master \"${BOND_NAME}\"
+# nmcli connection add type bond-slave autoconnect yes ifname "${BOND_SLAVE2}" master "${BOND_NAME}"
+
+# Bonding Options
+echo nmcli connection modify \"${BOND_NAME}\" bond.options \"${BOND_OPTIONS}\"
+# nmcli connection modify "${BOND_NAME}" bond.options "${BOND_OPTIONS}"
+
+# autoconnect no: Slave 1
+echo nmcli connection modify \"${BOND_SLAVE1}\" connection.autoconnect no
+# nmcli connection modify "${BOND_SLAVE1}" connection.autoconnect no
+
+# autoconnect no: Slave 2
+echo nmcli connection modify \"${BOND_SLAVE2}\" connection.autoconnect no
+# nmcli connection modify "${BOND_SLAVE2}" connection.autoconnect no
+

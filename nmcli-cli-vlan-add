@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# nmcli-tool-vlan-add
+
+IF_NAME=$1
+VLAN_ID=$2
+VLAN_IF_NAME=${3:-$IF_NAME.$VLAN_ID}
+
+if [[ -z "${VLAN_ID}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 IF_NAME VLAN_ID [VLAN_IF_NAME]
+
+    EXAMPLES
+
+        $0 eno1 100
+            -> eno1.100
+        $0 bond1 100 vlan.100
+            -> vlan.100
+
+_EOF_
+    exit 1
+fi
+
+# Check interface
+nmcli connection show "${IF_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${IF_NAME} not found."
+    exit 1
+fi
+
+# Add vlan interface
+echo nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name \"${VLAN_IF_NAME}\" ifname \"${VLAN_IF_NAME}\" dev \"${IF_NAME}\" id ${VLAN_ID}
+# nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name "${VLAN_IF_NAME}" ifname "${VLAN_IF_NAME}" dev "${IF_NAME}" id ${VLAN_ID}
+

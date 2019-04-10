@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# nmcli-tool-device-name
+
+DEVICE=$1
+NEW_NAME=${2:-${DEVICE}}
+
+if [[ -z "${DEVICE}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 DEVICE [NEW_NAME]
+
+    EXAMPLES
+
+        $0 eno1
+        $0 eno1 "New Name 1"
+
+_EOF_
+    exit 1
+fi
+
+# Check interface
+nmcli device show "${DEVICE}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface device ${DEVICE} not found."
+    exit 1
+fi
+
+CURRENT_NAME=$(nmcli device show "${DEVICE}" | grep "^GENERAL.CONNECTION:" | cut -d':' -f 2 | xargs)
+
+# Name
+echo nmcli connection modify \"${CURRENT_NAME}\" connection.id \"${NEW_NAME}\"
+# nmcli connection modify "${CURRENT_NAME}" connection.id "${NEW_NAME}"
+

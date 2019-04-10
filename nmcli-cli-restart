@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# nmcli-tool-restart
+
+NAME=$1
+
+if [[ -z "${NAME}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 NAME
+
+    EXAMPLES
+
+        $0 eno1
+
+_EOF_
+    exit 1
+fi
+
+# Check interface
+nmcli connection show "${NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${NAME} not found."
+    exit 1
+fi
+
+# down and up
+echo "nmcli connection down \"${NAME}\"; nmcli connection up \"${NAME}\""
+# nmcli connection down "${NAME}"; nmcli connection up "${NAME}"
+

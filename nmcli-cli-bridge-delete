@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# nmcli-tool-bridge-delete
+
+BRIDGE_NAME=$1
+
+if [[ -z "${BRIDGE_NAME}" ]]; then
+    cat << _EOF_
+Usage:
+
+    $0 BRIDGE_NAME
+
+    EXAMPLES
+
+        $0 br1
+
+_EOF_
+    exit 1
+fi
+
+# Check interface
+nmcli connection show "${BRIDGE_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -ne 0 ]]; then
+    echo "Error: Interface ${BRIDGE_NAME} not found."
+    exit 1
+fi
+
+# Find slave interfaces
+SLAVE_LIST=$(grep "^BRIDGE=${BRIDGE_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
+
+# Delete slave interfaces
+for i in ${SLAVE_LIST}
+do
+    echo nmcli connection modify \"${i}\" connection.master \"\"
+    echo nmcli connection modify \"${i}\" connection.slave-type \"\"
+done
+
+# Bridge
+echo nmcli connection delete \"${BRIDGE_NAME}\"
+
