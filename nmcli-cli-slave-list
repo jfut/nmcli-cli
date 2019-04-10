@@ -2,46 +2,46 @@
 #
 # nmcli-cli-slave-list
 
-NAME=$1
-
-if [[ -z "${NAME}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
+    $0 IF_NAME
 
-    $0 NAME
-
-    EXAMPLES
-
+    Examples:
         $0 bond1
         $0 br1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface
-nmcli connection show "${NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${NAME} not found."
-    exit 1
-fi
+slave_list() {
+    local IF_NAME=$1
 
-# Bond: Find slave interfaces
-SLAVE_LIST=$(grep "^MASTER=${NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
+    # Bond: Find slave interfaces
+    SLAVE_LIST=$(grep "^MASTER=${IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
 
-# Print slave interfaces
-for i in ${SLAVE_LIST}
-do
-    echo "${i}"
-done
+    # Print slave interfaces
+    for i in ${SLAVE_LIST}
+    do
+        echo "${i}"
+    done
 
-# Bridge: Find slave interfaces
-SLAVE_LIST=$(grep "^BRIDGE=${NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
+    # Bridge: Find slave interfaces
+    SLAVE_LIST=$(grep "^BRIDGE=${IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
 
-# Print slave interfaces
-for i in ${SLAVE_LIST}
-do
-    echo "${i}"
-done
+    # Print slave interfaces
+    for i in ${SLAVE_LIST}
+    do
+        echo "${i}"
+    done
+}
+
+# Main
+main() {
+    [[ $# -le 0 ]] && usage && exit 1
+
+    slave_list "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 
