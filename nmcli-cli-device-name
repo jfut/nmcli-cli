@@ -2,35 +2,91 @@
 #
 # nmcli-cli-device-name
 
-DEVICE=$1
-NEW_NAME=${2:-${DEVICE}}
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${DEVICE}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 DEVICE [NEW_NAME]
+    $0 [-n] [-x] DEVICE [NEW_IF_NAME]
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
+    Examples:
         $0 eno1
         $0 eno1 "New Name 1"
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface
-nmcli device show "${DEVICE}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface device ${DEVICE} not found."
-    exit 1
-fi
+check() {
+    local DEVICE=${1:-}
 
-CURRENT_NAME=$(nmcli device show "${DEVICE}" | grep "^GENERAL.CONNECTION:" | cut -d':' -f 2 | xargs)
+    # Check device
+    nmcli device show "${DEVICE}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Target device \"${DEVICE}\" not found."
+        exit 1
+    fi
+}
 
-# Name
-echo nmcli connection modify \"${CURRENT_NAME}\" connection.id \"${NEW_NAME}\"
-# nmcli connection modify "${CURRENT_NAME}" connection.id "${NEW_NAME}"
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
+device_name_set() {
+    local DEVICE=$1
+    local NEW_IF_NAME=${2:-${DEVICE}}
+
+    CURRENT_NAME=$(nmcli device show "${DEVICE}" | grep "^GENERAL.CONNECTION:" | cut -d':' -f 2 | xargs)
+    if [[ "${CURRENT_NAME}" = "--" ]]; then
+        CURRENT_NAME=${DEVICE}
+    fi
+
+    echo_or_execute nmcli connection modify \"${CURRENT_NAME}\" connection.id \"${NEW_IF_NAME}\"
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 0 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    device_name_set "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 

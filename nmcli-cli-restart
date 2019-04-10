@@ -2,31 +2,85 @@
 #
 # nmcli-cli-restart
 
-IF_NAME=$1
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${IF_NAME}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 IF_NAME
+    $0 [-n] [-x] IF_NAME
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
+    Examples:
         $0 eno1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface
-nmcli connection show "${IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${IF_NAME} not found."
-    exit 1
-fi
+check() {
+    local IF_NAME=${1:-}
 
-# down and up
-echo "nmcli connection down \"${IF_NAME}\"; nmcli connection up \"${IF_NAME}\""
-# nmcli connection down "${IF_NAME}"; nmcli connection up "${IF_NAME}"
+    # Check interface
+    nmcli connection show "${IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Target interface \"${IF_NAME}\" not found."
+        exit 1
+    fi
+}
+
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
+restart() {
+    local IF_NAME=${1:-}
+
+    # down and up
+    echo_or_execute "nmcli connection down \"${IF_NAME}\"; nmcli connection up \"${IF_NAME}\""
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 0 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    restart "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 
