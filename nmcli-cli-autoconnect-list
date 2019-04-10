@@ -2,32 +2,41 @@
 #
 # nmcli-cli-autoconnect-list
 
-ON_OFF=$1
-
-if [[ -z "${ON_OFF}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
     $0 on|off
 
-    EXAMPLES
-
+    Examples:
         $0 off
         $0 on
 
 _EOF_
-    exit 1
-fi
+}
 
-if [[ "${ON_OFF}" = on ]]; then
-    ON_OFF="yes"
-elif [[ "${ON_OFF}" = off ]]; then
-    ON_OFF="no"
-else
-    echo "Error: option invalid: ${ON_OFF}"
-    exit 1
-fi
+autoconnect_list() {
+    ON_OFF=${1:-}
 
-# Bond: Find ONBOOT interfaces
-grep "^ONBOOT=${ON_OFF}" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g'
+    if [[ "${ON_OFF}" = on ]]; then
+        ON_OFF="yes"
+    elif [[ "${ON_OFF}" = off ]]; then
+        ON_OFF="no"
+    else
+        echo "Error: option \"${ON_OFF}\" is invalid."
+        exit 1
+    fi
+
+    # list
+    grep "^ONBOOT=${ON_OFF}" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g'
+}
+
+# Main
+main() {
+    [[ $# -le 0 ]] && usage && exit 1
+
+    autoconnect_list "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 
