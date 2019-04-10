@@ -2,14 +2,14 @@
 #
 # nmcli-cli-autoconnect-set
 
-NAME=$1
+IF_NAME=$1
 ON_OFF=${2}
 
 if [[ -z "${ON_OFF}" ]]; then
     cat << _EOF_
 Usage:
 
-    $0 NAME ON|OFF
+    $0 IF_NAME ON|OFF
 
     EXAMPLES
 
@@ -21,14 +21,14 @@ _EOF_
 fi
 
 # Check interface
-nmcli connection show "${NAME}" > /dev/null 2>&1
+nmcli connection show "${IF_NAME}" > /dev/null 2>&1
 RET=$?
 if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${NAME} not found."
+    echo "Error: Interface ${IF_NAME} not found."
     exit 1
 fi
 
 # auutoconnect
-echo nmcli connection modify \"${NAME}\" connection.autoconnect \"${ON_OFF}\"
-# nmcli connection modify "${NAME}" connection.autoconnect "${ON_OFF}"
+echo nmcli connection modify \"${IF_NAME}\" connection.autoconnect \"${ON_OFF}\"
+# nmcli connection modify "${IF_NAME}" connection.autoconnect "${ON_OFF}"
 

@@ -2,14 +2,14 @@
 #
 # nmcli-tool-bridge-add
 
-BRDIGE_NAME=$1
-BRDIGE_SLAVE=$2
+BRDIGE_IF_NAME=$1
+IF_SLAVE=$2
 
-if [[ -z "${BRDIGE_SLAVE}" ]]; then
+if [[ -z "${IF_SLAVE}" ]]; then
     cat << _EOF_
 Usage:
 
-    $0 NEW_BRDIGE_NAME SLAVE_NAME
+    $0 NEW_BRDIGE_IF_NAME IF_SLAVE
 
     EXAMPLES
 
@@ -20,20 +20,28 @@ _EOF_
     exit 1
 fi
 
-# Check interface: Slave 1
-nmcli connection show "${BRDIGE_SLAVE}" > /dev/null 2>&1
+# Check new bridge interface
+nmcli connection show "${BRDIGE_IF_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -eq 0 ]]; then
+    echo "Error: Interface ${BRDIGE_IF_NAME} already exists."
+    exit 1
+fi
+
+# Check interface: Slave
+nmcli connection show "${IF_SLAVE}" > /dev/null 2>&1
 RET=$?
 if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${BRDIGE_SLAVE} not found."
+    echo "Error: Interface ${IF_SLAVE} not found."
     exit 1
 fi
 
 # Bridge: STP: No, Forward Delay: 0
-echo nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 con-name \"${BRDIGE_NAME}\" ifname \"${BRDIGE_NAME}\"
-# nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 nocon-name "${BRDIGE_NAME}" ifname "${BRDIGE_NAME}"
+echo nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 con-name \"${BRDIGE_IF_NAME}\" ifname \"${BRDIGE_IF_NAME}\"
+# nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 nocon-name "${BRDIGE_IF_NAME}" ifname "${BRDIGE_IF_NAME}"
 
 # Slave
-echo nmcli connection modify \"${BRDIGE_SLAVE}\" connection.slave-type bridge connection.master \"${BRDIGE_NAME}\"
+echo nmcli connection modify \"${IF_SLAVE}\" connection.slave-type bridge connection.master \"${BRDIGE_IF_NAME}\"
 
 # Option: IP
 echo

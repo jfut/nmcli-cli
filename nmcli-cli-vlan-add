@@ -2,24 +2,30 @@
 #
 # nmcli-tool-vlan-add
 
-IF_NAME=$1
-VLAN_ID=$2
-VLAN_IF_NAME=${3:-$IF_NAME.$VLAN_ID}
+VLAN_IF_NAME=$1
+IF_NAME=$2
+VLAN_ID=$3
 
 if [[ -z "${VLAN_ID}" ]]; then
     cat << _EOF_
 Usage:
 
-    $0 IF_NAME VLAN_ID [VLAN_IF_NAME]
+    $0 VLAN_IF_NAME IF_NAME VLAN_ID
 
     EXAMPLES
 
-        $0 eno1 100
-            -> eno1.100
-        $0 bond1 100 vlan.100
-            -> vlan.100
+        $0 eno1.100 eno1 100
+        $0 vlan.100 bond1 100
 
 _EOF_
+    exit 1
+fi
+
+# Check new vlan interface
+nmcli connection show "${VLAN_IF_NAME}" > /dev/null 2>&1
+RET=$?
+if [[ ${RET} -eq 0 ]]; then
+    echo "Error: Interface ${VLAN_IF_NAME} already exists."
     exit 1
 fi
 
