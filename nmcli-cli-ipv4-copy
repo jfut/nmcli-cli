@@ -102,7 +102,7 @@ main() {
     done
     shift $((OPTIND - 1))
 
-    [[ $# -le 0 ]] && usage && exit 1
+    [[ $# -lt 2 ]] && usage && exit 1
 
     if [[ "${NO_CHECK}" = "no" ]]; then
         check "${@}"
