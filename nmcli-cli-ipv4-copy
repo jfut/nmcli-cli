@@ -75,6 +75,10 @@ ipv4_copy() {
     # Gateway
     SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.gateway:" | awk -e '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.gateway \"${SRC_GATEWAY}\"
+
+    echo
+    echo "# Next, change IP address for \"${SRC_IF_NAME}\"."
+    echo "# And, restart interfaces. e.g. nmcli-cli-restart \"${SRC_IF_NAME}\"; nmcli-cli-restart \"${DEST_IF_NAME}\""
 }
 
 # Main

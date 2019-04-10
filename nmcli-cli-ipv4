@@ -112,6 +112,9 @@ ipv4_set() {
         echo "Error: method \"${IF_METHOD}\" is invalid. (dhcp|static|disable) are supported."
         exit 1
     fi
+
+    echo
+    echo "# Next, restart the interface. e.g. nmcli-cli-restart \"${IF_NAME}\""
 }
 
 # Main
