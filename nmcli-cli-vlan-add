@@ -2,42 +2,107 @@
 #
 # nmcli-cli-vlan-add
 
-VLAN_IF_NAME=$1
-IF_NAME=$2
-VLAN_ID=$3
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${VLAN_ID}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 VLAN_IF_NAME IF_NAME VLAN_ID
+    $0 [-n] [-x] VLAN_IF_NAME VLAN_ID IF_NAME
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
-        $0 eno1.100 eno1 100
-        $0 vlan.100 bond1 100
+    Examples:
+        $0 eno1.100 100 eno1
+        $0 vlan.100 100 bond1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check new vlan interface
-nmcli connection show "${VLAN_IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -eq 0 ]]; then
-    echo "Error: Interface ${VLAN_IF_NAME} already exists."
-    exit 1
-fi
+check() {
+    local VLAN_IF_NAME=${1:-}
+    local IF_NAME=${3:-}
 
-# Check interface
-nmcli connection show "${IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${IF_NAME} not found."
-    exit 1
-fi
+    # Check new vlan interface
+    nmcli connection show "${VLAN_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -eq 0 ]]; then
+        echo "Error: Target vlan interface \"${VLAN_IF_NAME}\" already exists."
+        exit 1
+    fi
 
-# Add vlan interface
-echo nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name \"${VLAN_IF_NAME}\" ifname \"${VLAN_IF_NAME}\" dev \"${IF_NAME}\" id ${VLAN_ID}
-# nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name "${VLAN_IF_NAME}" ifname "${VLAN_IF_NAME}" dev "${IF_NAME}" id ${VLAN_ID}
+    # Check interface
+    nmcli connection show "${IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Target interface \"${IF_NAME}\" not found."
+        exit 1
+    fi
+}
+
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
+vlan_add() {
+    local VLAN_IF_NAME=${1:-}
+    local VLAN_ID=${2:-}
+    local IF_NAME=${3:-}
+
+    # Add vlan interface
+    echo_or_execute nmcli connection add type vlan ipv4.method disabled ipv6.method ignore \
+        con-name \"${VLAN_IF_NAME}\" ifname \"${VLAN_IF_NAME}\" dev \"${IF_NAME}\" \
+        id ${VLAN_ID}
+
+    echo
+    echo "# Next, set IP address for \"${VLAN_IF_NAME}\".       e.g. nmcli-cli-ipv4 \"${VLAN_IF_NAME}\" ..."
+
+    IF_TYPE=$(nmcli connection show "${IF_NAME}" | grep connection.type | awk -e '{ print $2 }')
+    if [[ "${IF_TYPE}" != "bridge" ]]; then
+        echo "# Or, add a bridge interface for \"${VLAN_IF_NAME}\". e.g. nmcli-cli-bridge-add \"br.${VLAN_ID}\" \"${VLAN_IF_NAME}\""
+    fi
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 2 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    vlan_add "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 

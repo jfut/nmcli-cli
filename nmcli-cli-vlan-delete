@@ -2,31 +2,85 @@
 #
 # nmcli-cli-vlan-delete
 
-VLAN_IF_NAME=$1
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${VLAN_IF_NAME}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 VLAN_IF_NAME
+    $0 [-n] [-x] VLAN_IF_NAME
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
+    Examples:
         $0 bond1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface: Slave 1
-nmcli connection show "${VLAN_IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${VLAN_IF_NAME} not found."
-    exit 1
-fi
+check() {
+    local VLAN_IF_NAME=${1:-}
 
-# Delete vlan interface
-echo nmcli connection delete \"${VLAN_IF_NAME}\"
-# nmcli connection delete "${VLAN_IF_NAME}"
+    # Check vlan interface
+    nmcli connection show "${VLAN_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Target vlan interface \"${VLAN_IF_NAME}\" not found."
+        exit 1
+    fi
+}
+
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
+vlan_delete() {
+    local VLAN_IF_NAME=${1:-}
+
+    # Delete vlan interface
+    echo_or_execute nmcli connection delete \"${VLAN_IF_NAME}\"
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 0 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    vlan_delete "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 
