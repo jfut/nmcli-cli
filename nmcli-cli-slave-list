@@ -10,30 +10,36 @@ Usage:
     Examples:
         $0 bond1
         $0 br1
+        $0 vlan.100
 
 _EOF_
 }
 
 slave_list() {
-    local IF_NAME=$1
+    local IF_NAME=${1:-}
 
-    # Bond: Find slave interfaces
+    # Bond
+    # Find slave interfaces
     SLAVE_LIST=$(grep "^MASTER=${IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
-
-    # Print slave interfaces
     for i in ${SLAVE_LIST}
     do
         echo "${i}"
     done
 
-    # Bridge: Find slave interfaces
+    # Bridge
+    # Find slave interfaces
     SLAVE_LIST=$(grep "^BRIDGE=${IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
-
-    # Print slave interfaces
     for i in ${SLAVE_LIST}
     do
         echo "${i}"
     done
+
+    # VLAN
+    # Find physical interface
+    IFCFG_FILE="/etc/sysconfig/network-scripts/ifcfg-${IF_NAME}"
+    if [[ -f "${IFCFG_FILE}" ]]; then
+        grep "^PHYSDEV=" "${IFCFG_FILE}" | cut -d'=' -f 2
+    fi
 }
 
 # Main
