@@ -4,6 +4,15 @@
 
 ECHO_OR_EXECUTE="echo"
 
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
 usage() {
     cat << _EOF_
 Usage:
@@ -39,15 +48,6 @@ check() {
     if [[ ${RET} -ne 0 ]]; then
         echo "Error: Target interface \"${IF_NAME}\" not found."
         exit 1
-    fi
-}
-
-echo_or_execute() {
-    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
-    else
-        ${ECHO_OR_EXECUTE} ${@}
     fi
 }
 

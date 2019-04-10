@@ -4,6 +4,15 @@
 
 ECHO_OR_EXECUTE="echo"
 
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
 usage() {
     cat << _EOF_
 Usage:
@@ -40,15 +49,6 @@ check() {
        echo "Error: Slave interface \"${IF_SLAVE}\" not found."
        exit 1
    fi
-}
-
-echo_or_execute() {
-    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
-    else
-        ${ECHO_OR_EXECUTE} ${@}
-    fi
 }
 
 bridge_add() {
