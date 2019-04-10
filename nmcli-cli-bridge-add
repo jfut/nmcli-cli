@@ -2,49 +2,106 @@
 #
 # nmcli-cli-bridge-add
 
-BRDIGE_IF_NAME=$1
-IF_SLAVE=$2
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${IF_SLAVE}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 NEW_BRDIGE_IF_NAME IF_SLAVE
+    $0 [-n] [-x] NEW_BRDIGE_IF_NAME IF_SLAVE
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
+    Examples:
         $0 br1 eno1
         $0 br1 bond1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check new bridge interface
-nmcli connection show "${BRDIGE_IF_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -eq 0 ]]; then
-    echo "Error: Interface ${BRDIGE_IF_NAME} already exists."
-    exit 1
-fi
+check() {
+    local BRDIGE_IF_NAME=${1:-}
+    local IF_SLAVE=${2:-}
 
-# Check interface: Slave
-nmcli connection show "${IF_SLAVE}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${IF_SLAVE} not found."
-    exit 1
-fi
+    # Check new bridge interface
+    nmcli connection show "${BRDIGE_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -eq 0 ]]; then
+        echo "Error: Bridge interface \"${BRDIGE_IF_NAME}\" already exists."
+        exit 1
+    fi
 
-# Bridge: STP: No, Forward Delay: 0
-echo nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 con-name \"${BRDIGE_IF_NAME}\" ifname \"${BRDIGE_IF_NAME}\"
-# nmcli connection add type bridge autoconnect yes bridge.stp no bridge.forward-delay 0 nocon-name "${BRDIGE_IF_NAME}" ifname "${BRDIGE_IF_NAME}"
+    # Check slave interface
+    nmcli connection show "${IF_SLAVE}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+       echo "Error: Slave interface \"${IF_SLAVE}\" not found."
+       exit 1
+   fi
+}
 
-# Slave
-echo nmcli connection modify \"${IF_SLAVE}\" connection.slave-type bridge connection.master \"${BRDIGE_IF_NAME}\"
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
 
-# Option: IP
-echo
-echo "# -------------------------------------------------------"
-echo "# If it is bridge interface with no IP address, then:"
-./nmcli-cli-ipv4 br.100 disabled
+bridge_add() {
+    local BRDIGE_IF_NAME=${1:-}
+    local IF_SLAVE=${2:-}
+
+    # Bridge: STP: No, Forward Delay: 0
+    echo_or_execute nmcli connection add type bridge \
+        autoconnect yes ipv4.method disabled ipv6.method ignore \
+        bridge.stp no bridge.forward-delay 0 \
+        con-name \"${BRDIGE_IF_NAME}\" ifname \"${BRDIGE_IF_NAME}\"
+
+    # Slave
+    echo_or_execute nmcli connection modify \"${IF_SLAVE}\" connection.slave-type bridge connection.master \"${BRDIGE_IF_NAME}\"
+
+    # Option: IP
+    echo
+    echo "# Next, set IP address for \"${BRDIGE_IF_NAME}\". e.g. nmcli-cli-ipv4 \"${BRDIGE_IF_NAME}\" ..."
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 1 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    bridge_add "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
+

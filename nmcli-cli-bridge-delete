@@ -2,40 +2,94 @@
 #
 # nmcli-cli-bridge-delete
 
-BRIDGE_NAME=$1
+ECHO_OR_EXECUTE="echo"
 
-if [[ -z "${BRIDGE_NAME}" ]]; then
+usage() {
     cat << _EOF_
 Usage:
 
-    $0 BRIDGE_NAME
+    $0 [-n] [-x] BRIDGE_NAME
 
-    EXAMPLES
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
 
+    Examples:
         $0 br1
 
 _EOF_
-    exit 1
-fi
+}
 
-# Check interface
-nmcli connection show "${BRIDGE_NAME}" > /dev/null 2>&1
-RET=$?
-if [[ ${RET} -ne 0 ]]; then
-    echo "Error: Interface ${BRIDGE_NAME} not found."
-    exit 1
-fi
+check() {
+    local BRDIGE_IF_NAME=${1:-}
 
-# Find slave interfaces
-SLAVE_LIST=$(grep "^BRIDGE=${BRIDGE_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
+    # Check bridge interface
+    nmcli connection show "${BRDIGE_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+       echo "Error: Target bridge interface \"${BRDIGE_IF_NAME}\" not found."
+       exit 1
+   fi
+}
 
-# Delete slave interfaces
-for i in ${SLAVE_LIST}
-do
-    echo nmcli connection modify \"${i}\" connection.master \"\"
-    echo nmcli connection modify \"${i}\" connection.slave-type \"\"
-done
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
 
-# Bridge
-echo nmcli connection delete \"${BRIDGE_NAME}\"
+bridge_delete() {
+    local BRIDGE_NAME=${1:-}
+
+    # Find slave interfaces
+    SLAVE_LIST=$(grep "^BRIDGE=${BRIDGE_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
+
+    # Delete slave interfaces
+    for i in ${SLAVE_LIST}
+    do
+        echo_or_execute nmcli connection modify \"${i}\" connection.master \"\" connection.slave-type \"\"
+    done
+
+    # Delete bridge interface
+    echo nmcli connection delete \"${BRIDGE_NAME}\"
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -le 0 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    bridge_delete "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
 
