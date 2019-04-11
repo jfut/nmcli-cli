@@ -110,7 +110,7 @@ nmcli connection modify "eno1" ipv4.addresses "" ipv4.method dhcp
 
 # [disable: dummy interface + echo only]
 # ======================================
-# ./nmcli-cli-ipv4 -n eno1 disable
+# nmcli-cli-ipv4 -n eno1 disable
 # echo only.
 nmcli connection modify "eno1" ipv4.dns ""
 nmcli connection modify "eno1" ipv4.gateway ""
@@ -253,7 +253,7 @@ nmcli connection modify "eno1" ipv6.addresses "" ipv6.method dhcp
 
 # [disable: dummy interface + echo only]
 # ======================================
-# ./nmcli-cli-ipv6 -n eno1 disable
+# nmcli-cli-ipv6 -n eno1 disable
 # echo only.
 nmcli connection modify "eno1" ipv6.dns ""
 nmcli connection modify "eno1" ipv6.gateway ""
@@ -425,15 +425,15 @@ ens2f0
 ```
 Usage:
 
-    ./nmcli-cli-autoconnect-set [-n] [-x] IF_NAME ON|OFF
+    nmcli-cli-autoconnect-set [-n] [-x] IF_NAME ON|OFF
 
     Options:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
     Examples:
-        ./nmcli-cli-autoconnect-set eno1 off
-        ./nmcli-cli-autoconnect-set bond1 on
+        nmcli-cli-autoconnect-set eno1 off
+        nmcli-cli-autoconnect-set bond1 on
 ```
 
 Run examples:
@@ -694,16 +694,16 @@ Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully added
 ```
 Usage:
 
-    ./nmcli-cli-vlan-delete [-n] [-x] VLAN_IF_NAME
+    nmcli-cli-vlan-delete [-n] [-x] VLAN_IF_NAME
 
     Options:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
     Examples:
-        ./nmcli-cli-vlan-delete eno1.100
-        ./nmcli-cli-vlan-delete bond1.100
-        ./nmcli-cli-vlan-delete vlan.100
+        nmcli-cli-vlan-delete eno1.100
+        nmcli-cli-vlan-delete bond1.100
+        nmcli-cli-vlan-delete vlan.100
 ```
 
 Run examples:
@@ -870,16 +870,16 @@ nmcli connection modify "br1.100" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 - Interfaces: br1.100 + bond1.100 + bond1
 
 ```
-# ./nmcli-cli-bridge-delete -n br1.100
+# nmcli-cli-bridge-delete -n br1.100
 # echo only.
 nmcli connection modify "bond1.100" connection.master "" connection.slave-type ""
 nmcli connection delete "br1.100"
 
-# ./nmcli-cli-vlan-delete -n bond1.100
+# nmcli-cli-vlan-delete -n bond1.100
 # echo only.
 nmcli connection delete "bond1.100"
 
-# ./nmcli-cli-bond-delete -n bond1
+# nmcli-cli-bond-delete -n bond1
 # echo only.
 nmcli connection delete "bond-slave-eno1"
 nmcli connection delete "bond-slave-eno3"
