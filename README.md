@@ -2,6 +2,32 @@
 
 nmcli-cli is a command line tool that wraps `nmcli` to use for simple use cases.
 
+- Device
+  - [nmcli-cli-device-name](#nmcli-cli-device-name)
+- IPv4
+  - [nmcli-cli-ipv4](#nmcli-cli-ipv4)
+  - [nmcli-cli-ipv4-copy](#nmcli-cli-ipv4-copy)
+- IPv6
+  - [nmcli-cli-ipv6](#nmcli-cli-ipv6)
+  - [nmcli-cli-ipv6-copy](#nmcli-cli-ipv6-copy)
+- Interface misc tools
+  - [nmcli-cli-restart](#nmcli-cli-restart)
+  - [nmcli-cli-autoconnect-list](#nmcli-cli-autoconnect-list)
+  - [nmcli-cli-autoconnect-set](#nmcli-cli-autoconnect-set)
+  - [nmcli-cli-slave-list](#nmcli-cli-slave-list)
+- Bonding
+  - [nmcli-cli-bond-add](#nmcli-cli-bond-add)
+  - [nmcli-cli-bond-delete](#nmcli-cli-bond-delete)
+- VLAN
+  - [nmcli-cli-vlan-add](#nmcli-cli-vlan-add)
+  - [nmcli-cli-vlan-delete](#nmcli-cli-vlan-delete)
+- Bridge
+  - [nmcli-cli-bridge-add](#nmcli-cli-bridge-add)
+  - [nmcli-cli-bridge-delete](#nmcli-cli-bridge-delete)
+- Examples
+  - [Example: Add Bonding + VLAN + Bridge interface](#example-add-bonding--vlan--bridge-interface)
+  - [Example: Delete Brdige + VLAN + Bonding interface](#example-delete-brdige--vlan--bonding-interface)
+
 ## Device
 
 ### nmcli-cli-device-name
