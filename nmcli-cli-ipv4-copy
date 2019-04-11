@@ -31,13 +31,14 @@ Usage:
     Examples:
         $0 eno1 bond1
         $0 bond1 br1
+        $0 eno1 (show current configuration)
 
 _EOF_
 }
 
 check() {
     local SRC_IF_NAME=${1:-}
-    local DEST_IF_NAME=${2:-}
+    local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
 
     # Check interface: src
     nmcli connection show "${SRC_IF_NAME}" > /dev/null 2>&1
@@ -58,7 +59,7 @@ check() {
 
 ipv4_copy() {
     local SRC_IF_NAME=${1:-}
-    local DEST_IF_NAME=${2:-}
+    local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
 
     # IP
     SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.addresses:" | awk -e '{ print $2 }' | tr -d '-')
@@ -102,7 +103,7 @@ main() {
     done
     shift $((OPTIND - 1))
 
-    [[ $# -lt 2 ]] && usage && exit 1
+    [[ $# -lt 1 ]] && usage && exit 1
 
     if [[ "${NO_CHECK}" = "no" ]]; then
         check "${@}"
