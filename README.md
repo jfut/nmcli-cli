@@ -791,6 +791,37 @@ Applying: nmcli connection modify "bond1.100" connection.slave-type bridge conne
 
 ### nmcli-cli-bridge-delete
 
+```
+Usage:
+
+    nmcli-cli-bridge-delete [-n] [-x] BRIDGE_NAME
+
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
+
+    Examples:
+        nmcli-cli-bridge-delete br1
+        nmcli-cli-bridge-delete br1.100
+```
+
+Run examples:
+
+```
+# [bridge delete: echo only]
+# ==========================
+# nmcli-cli-bridge-delete -n br1
+# echo only.
+nmcli connection delete "br1"
+
+# [bridge delete: run it]
+# ========================
+# nmcli-cli-bridge-delete -x br1.100
+Applying: nmcli connection modify "bond1.100" connection.master "" connection.slave-type ""
+Applying: nmcli connection delete "br1.100"
+Connection 'br1.100' (0587e320-3c7c-4808-a93b-c55a5d7c657f) successfully deleted.
+```
+
 ## Example: Add Bonding + VLAN + Bridge interface
 
 - Interfaces: eno1 + eno3 + ens2f0
