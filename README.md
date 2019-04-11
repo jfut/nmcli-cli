@@ -402,7 +402,7 @@ Run examples:
 
 ```
 # [autoconnect on list: echo only]
-# ===============================
+# ================================
 # nmcli-cli-autoconnect-list on
 bond1
 bond1.100
@@ -440,7 +440,7 @@ Run examples:
 
 ```
 # [autoconnect on: echo only]
-# ==========================
+# ===========================
 # nmcli-cli-autoconnect-set eno1 on
 # echo only.
 nmcli connection modify "eno1" connection.autoconnect "on"
@@ -716,7 +716,7 @@ Run examples:
 nmcli connection delete "eno1.100"
 
 # [vlan delete: run it]
-# ========================
+# =====================
 # nmcli-cli-vlan-delete -x eno1.100
 Applying: nmcli connection delete "bond1.100"
 Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully deleted.
@@ -815,7 +815,7 @@ Run examples:
 nmcli connection delete "br1"
 
 # [bridge delete: run it]
-# ========================
+# =======================
 # nmcli-cli-bridge-delete -x br1.100
 Applying: nmcli connection modify "bond1.100" connection.master "" connection.slave-type ""
 Applying: nmcli connection delete "br1.100"
@@ -826,8 +826,8 @@ Connection 'br1.100' (0587e320-3c7c-4808-a93b-c55a5d7c657f) successfully deleted
 
 - Interfaces: eno1 + eno3 + ens2f0
 - Bonding: LACP
-- VLAN: ID 100
-- Bridge: VLAN
+- VLAN ID: 100
+- Bridge: via VLAN interface
 - IP: static IPv4 + IPv6
 
 ```
