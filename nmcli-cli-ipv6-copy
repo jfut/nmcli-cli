@@ -1,0 +1,120 @@
+#!/bin/bash
+#
+# nmcli-cli-ipv6-copy
+#
+# Copyright (c) 2019 Jun Futagawa (jfut)
+#
+# This software is released under the MIT License.
+# http://opensource.org/licenses/mit-license.php
+
+ECHO_OR_EXECUTE="echo"
+
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
+usage() {
+    cat << _EOF_
+Usage:
+
+    $0 [-n] [-x] SRC_IF_NAME DEST_IF_NAME
+
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
+
+    Examples:
+        $0 eno1 bond1
+        $0 bond1 br1
+        $0 eno1 (show current configuration)
+
+_EOF_
+}
+
+check() {
+    local SRC_IF_NAME=${1:-}
+    local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
+
+    # Check interface: src
+    nmcli connection show "${SRC_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Source interface "${SRC_IF_NAME}" not found."
+        exit 1
+    fi
+
+    # Check interface: dest
+    nmcli connection show "${DEST_IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Destination interface "${DEST_IF_NAME}" not found."
+        exit 1
+    fi
+}
+
+ipv6_copy() {
+    local SRC_IF_NAME=${1:-}
+    local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
+
+    # IP
+    SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.addresses:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.addresses \"${SRC_IP_SUBNET}\"
+
+    # Method
+    SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.method:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.method "${SRC_METHOD}"
+
+    # Gateway
+    SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.gateway:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.gateway \"${SRC_GATEWAY}\"
+
+    # DNS
+    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.dns:" | awk -e '{ print $2 }' | tr -d '-')
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.dns \"${SRC_DNS}\"
+
+    echo
+    echo "# Next, change IP address for \"${SRC_IF_NAME}\"."
+    echo "# And, restart interfaces. e.g. nmcli-cli-restart \"${SRC_IF_NAME}\"; nmcli-cli-restart \"${DEST_IF_NAME}\""
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -lt 1 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    ipv6_copy "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
+

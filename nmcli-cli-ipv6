@@ -1,0 +1,151 @@
+#!/bin/bash
+#
+# nmcli-cli-ipv6
+#
+# Copyright (c) 2019 Jun Futagawa (jfut)
+#
+# This software is released under the MIT License.
+# http://opensource.org/licenses/mit-license.php
+
+ECHO_OR_EXECUTE="echo"
+
+echo_or_execute() {
+    if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
+        echo "Applying: ${@}"
+        eval ${@}
+    else
+        ${ECHO_OR_EXECUTE} ${@}
+    fi
+}
+
+usage() {
+    cat << _EOF_
+Usage:
+
+    $0 [-n] [-x] NAME dhcp|static|disable IP_SUBNET [GATEWAY] [DNS]
+
+    Options:
+        -n No interface check (Default: check interface)
+        -x Run command (Default: echo only)
+
+    Examples:
+        $0 eno1 auto
+        $0 eno1 dhcp
+        $0 eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:4860:4860::8888,2001:4860:4860::8844"
+        $0 eno1 static 2001:db8:1::101/48
+        $0 eno1 link-local
+        $0 eno1 disable
+
+_EOF_
+}
+
+check() {
+    local IF_NAME=${1:-}
+
+    # Check interface
+    nmcli connection show "${IF_NAME}" > /dev/null 2>&1
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: Target interface \"${IF_NAME}\" not found."
+        exit 1
+    fi
+}
+
+ipv6_set_auto_method() {
+    local IF_NAME=${1:-}
+    local IF_METHOD=${2:-}
+
+    # DNS
+    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.dns \"\"
+
+    # Gateway
+    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.gateway \"\"
+
+    # IP
+    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.addresses \"\" ipv6.method "${IF_METHOD}"
+}
+
+ipv6_set_static() {
+    local IF_NAME=${1:-}
+    local IF_IP_SUBNET=${2:-}
+    local IF_GATEWAY=${3:-}
+    local IF_DNS=${4:-}
+
+    # IP
+    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.addresses \"${IF_IP_SUBNET}\" ipv6.method manual
+
+    # Option: Gateway
+    if [[ ! -z "${IF_GATEWAY}" ]]; then
+        echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.gateway \"${IF_GATEWAY}\"
+    fi
+
+    # Option: DNS
+    if [[ ! -z "${IF_DNS}" ]]; then
+        echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.dns \"${IF_DNS}\"
+    fi
+}
+
+ipv6_set() {
+    IF_NAME=${1:-}
+    IF_METHOD=${2:-}
+    IF_IP_SUBNET=${3:-}
+    IF_GATEWAY=${4:-}
+    IF_DNS=${5:-}
+
+    if [[ "${IF_METHOD}" = "auto" ]]; then
+        ipv6_set_auto_method "${IF_NAME}" "auto"
+    elif [[ "${IF_METHOD}" = "dhcp" ]]; then
+        ipv6_set_auto_method "${IF_NAME}" "dhcp"
+    elif [[ "${IF_METHOD}" = "link-local" ]]; then
+        ipv6_set_auto_method "${IF_NAME}" "link-local"
+    elif [[ "${IF_METHOD}" = "static" ]] || [[ "${IF_METHOD}" = "manual" ]]; then
+        ipv6_set_static "${IF_NAME}" "${IF_IP_SUBNET}" "${IF_GATEWAY}" "${IF_DNS}"
+    elif [[ "${IF_METHOD}" = "link-local" ]]; then
+        ipv6_set_auto_method "${IF_NAME}" "link-local"
+    elif [[ "${IF_METHOD}" = "disable" ]] || [[ "${IF_METHOD}" = "ignore" ]]; then
+        ipv6_set_auto_method "${IF_NAME}" "ignore"
+    else
+        echo "Error: method \"${IF_METHOD}\" is invalid. (auto|dhcp|static|link-local|disable) are supported."
+        exit 1
+    fi
+
+    echo
+    echo "# Next, restart the interface. e.g. nmcli-cli-restart \"${IF_NAME}\""
+}
+
+# Main
+main() {
+    local NO_CHECK="no"
+    while getopts nxh OPT; do
+        case "${OPT}" in
+            "n" )
+                NO_CHECK="yes" ;;
+            "x" )
+                ECHO_OR_EXECUTE="" ;;
+            "h" )
+                usage
+                exit 0
+                ;;
+            * )
+                usage
+                exit 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# -lt 1 ]] && usage && exit 1
+
+    if [[ "${NO_CHECK}" = "no" ]]; then
+        check "${@}"
+    fi
+
+    if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
+        echo "# ${ECHO_OR_EXECUTE} only."
+    fi
+
+    ipv6_set "${@}"
+}
+
+[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
+
