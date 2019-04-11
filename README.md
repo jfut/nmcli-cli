@@ -822,7 +822,9 @@ Applying: nmcli connection delete "br1.100"
 Connection 'br1.100' (0587e320-3c7c-4808-a93b-c55a5d7c657f) successfully deleted.
 ```
 
-## Example: Add Bonding + VLAN + Bridge interface
+## Examples
+
+### Example: Add Bonding + VLAN + Bridge interface
 
 - Interfaces: eno1 + eno3 + ens2f0
 - Bonding: LACP
@@ -863,7 +865,7 @@ nmcli connection modify "br1.100" ipv6.gateway "2001:db8:1::1"
 nmcli connection modify "br1.100" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 ```
 
-## Example: Delete Brdige + VLAN + Bonding interface
+### Example: Delete Brdige + VLAN + Bonding interface
 
 - Interfaces: br1.100 + bond1.100 + bond1
 
