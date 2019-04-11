@@ -69,9 +69,16 @@ bridge_add() {
     # Slave
     echo_or_execute nmcli connection modify \"${IF_SLAVE}\" connection.slave-type bridge connection.master \"${BRDIGE_IF_NAME}\"
 
-    # Option: IP
-    echo
-    echo "# Next, set IP address for \"${BRDIGE_IF_NAME}\". e.g. nmcli-cli-ipv4 \"${BRDIGE_IF_NAME}\" ..."
+    cat << _EOF_
+
+# Next steps:
+# -> Check bridge status
+#    brctl show
+#
+# -> Set IP address
+#    nmcli-cli-ipv4 "${BRDIGE_IF_NAME}" ...
+#    nmcli-cli-ipv6 "${BRDIGE_IF_NAME}" ...
+_EOF_
 }
 
 # Main

@@ -59,7 +59,7 @@ bridge_delete() {
     done
 
     # Delete bridge interface
-    echo nmcli connection delete \"${BRIDGE_NAME}\"
+    echo_or_execute nmcli connection delete \"${BRIDGE_NAME}\"
 }
 
 # Main

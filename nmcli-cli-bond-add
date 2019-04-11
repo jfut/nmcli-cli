@@ -75,9 +75,21 @@ bond_add() {
         echo_or_execute nmcli connection add type bond-slave autoconnect yes ifname \"${IF_SLAVE}\" master \"${BOND_IF_NAME}\"
     done
 
-    echo
-    echo "# Next, set IP address for \"${BOND_IF_NAME}\". e.g. nmcli-cli-ipv4 \"${BOND_IF_NAME}\" ..."
-    echo "# Or, add a bridge interface for \"${BOND_IF_NAME}\". e.g. nmcli-cli-vlan-add \"${BOND_IF_NAME}.xxx\" xxx \"${BOND_IF_NAME}\""
+    cat << _EOF_
+
+# Next steps:
+# -> Check bond status
+#    cat /proc/net/bonding/${BOND_IF_NAME}
+#
+# -> Set IP address
+#    nmcli-cli-ipv4 "${BOND_IF_NAME}" ...
+#    nmcli-cli-ipv6 "${BOND_IF_NAME}" ...
+#
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "${BOND_IF_NAME}.100" 100 "${BOND_IF_NAME}"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "${BOND_IF_NAME}"
+_EOF_
 }
 
 # Main

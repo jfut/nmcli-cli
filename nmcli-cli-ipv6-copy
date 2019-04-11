@@ -63,11 +63,8 @@ ipv6_copy() {
 
     # IP
     SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.addresses:" | awk -e '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.addresses \"${SRC_IP_SUBNET}\"
-
-    # Method
     SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.method:" | awk -e '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.method "${SRC_METHOD}"
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.addresses \"${SRC_IP_SUBNET}\" ipv6.method "${SRC_METHOD}"
 
     # Gateway
     SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.gateway:" | awk -e '{ print $2 }' | tr -d '-')
@@ -77,9 +74,21 @@ ipv6_copy() {
     SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.dns:" | awk -e '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.dns \"${SRC_DNS}\"
 
-    echo
-    echo "# Next, change IP address for \"${SRC_IF_NAME}\"."
-    echo "# And, restart interfaces. e.g. nmcli-cli-restart \"${SRC_IF_NAME}\"; nmcli-cli-restart \"${DEST_IF_NAME}\""
+    cat << _EOF_
+
+# Next steps:
+# -> Change IP address
+#    nmcli-cli-ipv4 "${DEST_IF_NAME}" ...
+# -> Restart the interface:
+#    nmcli-cli-restart "${DEST_IF_NAME}"
+#
+# -> Create a bond interface:
+#    nmcli-cli-bond-add bond1 mode=... "${DEST_IF_NAME}" "ens2f0"
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "${IF_NAME}.100" 100 "${DEST_IF_NAME}"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "${DEST_IF_NAME}"
+_EOF_
 }
 
 # Main

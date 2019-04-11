@@ -61,13 +61,10 @@ ipv4_copy() {
     local SRC_IF_NAME=${1:-}
     local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
 
-    # IP
+    # IP + Method
     SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.addresses:" | awk -e '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.addresses \"${SRC_IP_SUBNET}\"
-
-    # Method
     SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.method:" | awk -e '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.method \"${SRC_METHOD}\"
+    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.addresses \"${SRC_IP_SUBNET}\" ipv4.method "${SRC_METHOD}"
 
     # Gateway
     SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.gateway:" | awk -e '{ print $2 }' | tr -d '-')
@@ -77,9 +74,21 @@ ipv4_copy() {
     SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.dns:" | awk -e '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.dns \"${SRC_DNS}\"
 
-    echo
-    echo "# Next, change IP address for \"${SRC_IF_NAME}\"."
-    echo "# And, restart interfaces. e.g. nmcli-cli-restart \"${SRC_IF_NAME}\"; nmcli-cli-restart \"${DEST_IF_NAME}\""
+    cat << _EOF_
+
+# Next steps:
+# -> Change IP address
+#    nmcli-cli-ipv4 "$DEST_IF_NAME{}" ...
+# -> Restart the interface:
+#    nmcli-cli-restart "${DEST_IF_NAME}"
+#
+# -> Create a bond interface:
+#    nmcli-cli-bond-add bond1 mode=... "${DEST_IF_NAME}" "ens2f0"
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "${DEST_IF_NAME}.100" 100 "${DEST_IF_NAME}"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "${DEST_IF_NAME}"
+_EOF_
 }
 
 # Main

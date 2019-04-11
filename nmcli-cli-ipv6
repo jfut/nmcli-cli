@@ -31,7 +31,7 @@ Usage:
     Examples:
         $0 eno1 auto
         $0 eno1 dhcp
-        $0 eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:4860:4860::8888,2001:4860:4860::8844"
+        $0 eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:db8:1::1,2001:db8:1::2"
         $0 eno1 static 2001:db8:1::101/48
         $0 eno1 link-local
         $0 eno1 disable
@@ -109,8 +109,19 @@ ipv6_set() {
         exit 1
     fi
 
-    echo
-    echo "# Next, restart the interface. e.g. nmcli-cli-restart \"${IF_NAME}\""
+    cat << _EOF_
+
+# Next steps:
+# -> Restart the interface:
+#    nmcli-cli-restart "${IF_NAME}"
+#
+# -> Create a bond interface:
+#    nmcli-cli-bond-add bond1 mode=... "${IF_NAME}" "ens2f0"
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "${IF_NAME}.100" 100 "${IF_NAME}"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "${IF_NAME}"
+_EOF_
 }
 
 # Main

@@ -14,8 +14,8 @@ Usage:
 
     Examples:
         $0 bond1
-        $0 br1
         $0 vlan.100
+        $0 br1
 
 _EOF_
 }

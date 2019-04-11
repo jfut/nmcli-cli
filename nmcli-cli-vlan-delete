@@ -29,7 +29,9 @@ Usage:
         -x Run command (Default: echo only)
 
     Examples:
-        $0 bond1
+        $0 eno1.100
+        $0 bond1.100
+        $0 vlan.100
 
 _EOF_
 }

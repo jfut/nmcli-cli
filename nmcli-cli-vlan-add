@@ -66,13 +66,19 @@ vlan_add() {
         con-name \"${VLAN_IF_NAME}\" ifname \"${VLAN_IF_NAME}\" dev \"${IF_NAME}\" \
         id ${VLAN_ID}
 
-    echo
-    echo "# Next, set IP address for \"${VLAN_IF_NAME}\".       e.g. nmcli-cli-ipv4 \"${VLAN_IF_NAME}\" ..."
+    cat << _EOF_
 
-    IF_TYPE=$(nmcli connection show "${IF_NAME}" | grep connection.type | awk -e '{ print $2 }')
-    if [[ "${IF_TYPE}" != "bridge" ]]; then
-        echo "# Or, add a bridge interface for \"${VLAN_IF_NAME}\". e.g. nmcli-cli-bridge-add \"br.${VLAN_ID}\" \"${VLAN_IF_NAME}\""
-    fi
+# Next steps:
+# -> Check vlan status
+#    cat /proc/net/vlan/${VLAN_IF_NAME}
+#
+# -> Set IP address
+#    nmcli-cli-ipv4 "${VLAN_IF_NAME}" ...
+#    nmcli-cli-ipv6 "${VLAN_IF_NAME}" ...
+#
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "${VLAN_IF_NAME}"
+_EOF_
 }
 
 # Main

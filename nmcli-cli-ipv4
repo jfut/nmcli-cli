@@ -113,8 +113,19 @@ ipv4_set() {
         exit 1
     fi
 
-    echo
-    echo "# Next, restart the interface. e.g. nmcli-cli-restart \"${IF_NAME}\""
+    cat << _EOF_
+
+# Next steps:
+# -> Restart the interface:
+#    nmcli-cli-restart "${IF_NAME}"
+#
+# -> Create a bond interface:
+#    nmcli-cli-bond-add bond1 mode=... "${IF_NAME}" "ens2f0"
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "${IF_NAME}.100" 100 "${IF_NAME}"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "${IF_NAME}"
+_EOF_
 }
 
 # Main
