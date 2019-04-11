@@ -879,9 +879,9 @@ nmcli connection delete "bond1.100"
 
 # ./nmcli-cli-bond-delete -n bond1
 # echo only.
-nmcli connection delete "bond-slave-ens38"
-nmcli connection delete "bond-slave-ens39"
-nmcli connection delete "bond-slave-ens40"
+nmcli connection delete "bond-slave-eno1"
+nmcli connection delete "bond-slave-eno3"
+nmcli connection delete "bond-slave-ens2f0"
 nmcli connection delete "bond1"
 ```
 
