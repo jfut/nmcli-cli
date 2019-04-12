@@ -129,7 +129,7 @@ nmcli connection modify "eno1" ipv4.addresses "" ipv4.method ignore
 
 # [static: run it]
 # ================
-# nmcli-cli-ipv4 -x eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:db8:1::1,2001:db8:1::2"
+# nmcli-cli-ipv4 -x eno1 static 192.168.1.101/24 192.168.1.1 "192.168.1.1,10.0.0.2"
 Applying: nmcli connection modify "eno1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
 Applying: nmcli connection modify "eno1" ipv4.gateway "192.168.1.1"
 Applying: nmcli connection modify "eno1" ipv4.dns "192.168.1.1,10.0.0.2"
