@@ -62,16 +62,16 @@ ipv4_copy() {
     local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
 
     # IP + Method
-    SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.addresses:" | awk -e '{ print $2 }' | tr -d '-')
-    SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.method:" | awk -e '{ print $2 }' | tr -d '-')
+    SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.addresses:" | awk '{ print $2 }' | tr -d '-')
+    SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.method:" | awk '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.addresses \"${SRC_IP_SUBNET}\" ipv4.method "${SRC_METHOD}"
 
     # Gateway
-    SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.gateway:" | awk -e '{ print $2 }' | tr -d '-')
+    SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.gateway:" | awk '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.gateway \"${SRC_GATEWAY}\"
 
     # DNS
-    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.dns:" | awk -e '{ print $2 }' | tr -d '-')
+    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv4.dns:" | awk '{ print $2 }' | tr -d '-')
     echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv4.dns \"${SRC_DNS}\"
 
     cat << _EOF_
