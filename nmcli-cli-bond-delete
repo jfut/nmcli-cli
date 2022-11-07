@@ -49,11 +49,11 @@ check() {
 bond_delete() {
     local BOND_IF_NAME=${1:-}
 
-    # Find slave interfaces
-    SLAVE_LIST=$(grep "^MASTER=${BOND_IF_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | egrep -o "bond-slave.*")
+    # Find lower interfaces
+    INTERFACE_LIST=$(ls "/sys/class/net/${BOND_IF_NAME}/" | grep "^lower_" | sed 's|lower_||')
 
-    # Delete slave interfaces
-    for i in ${SLAVE_LIST}
+    # Delete lower interfaces
+    for i in ${INTERFACE_LIST}
     do
         echo_or_execute nmcli connection delete \"${i}\"
     done

@@ -49,11 +49,11 @@ check() {
 bridge_delete() {
     local BRIDGE_NAME=${1:-}
 
-    # Find slave interfaces
-    SLAVE_LIST=$(grep "^BRIDGE=${BRIDGE_NAME}$" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g')
+    # Find lower interface
+    INTERFACE_LIST=$(ls "/sys/class/net/${BRIDGE_NAME}/" | grep "^lower_" | sed 's|lower_||')
 
-    # Delete slave interfaces
-    for i in ${SLAVE_LIST}
+    # Delete lower interface
+    for i in ${INTERFACE_LIST}
     do
         echo_or_execute nmcli connection modify \"${i}\" connection.master \"\" connection.slave-type \"\"
     done

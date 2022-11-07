@@ -391,11 +391,12 @@ Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkMa
 ```
 Usage:
 
-    nmcli-cli-autoconnect-list on|off
+    nmcli-cli-autoconnect-list all
+    nmcli-cli-autoconnect-list yes|no or on|off
 
     Examples:
-        nmcli-cli-autoconnect-list off
-        nmcli-cli-autoconnect-list on
+        nmcli-cli-autoconnect-list all
+        nmcli-cli-autoconnect-list yes
 ```
 
 Run examples:

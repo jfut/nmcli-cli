@@ -11,11 +11,12 @@ usage() {
     cat << _EOF_
 Usage:
 
-    $0 on|off
+    $0 all
+    $0 yes|no or on|off
 
     Examples:
-        $0 off
-        $0 on
+        $0 all
+        $0 yes
 
 _EOF_
 }
@@ -23,9 +24,11 @@ _EOF_
 autoconnect_list() {
     ON_OFF=${1:-}
 
-    if [[ "${ON_OFF}" = on ]]; then
+    if [[ "${ON_OFF}" == "all" ]]; then
+        ON_OFF="all"
+    elif [[ "${ON_OFF}" == "on" ]] || [[ "${ON_OFF}" == "yes" ]]; then
         ON_OFF="yes"
-    elif [[ "${ON_OFF}" = off ]]; then
+    elif [[ "${ON_OFF}" == "off" ]] || [[ "${ON_OFF}" == "no" ]]; then
         ON_OFF="no"
     else
         echo "Error: option \"${ON_OFF}\" is invalid."
@@ -33,7 +36,15 @@ autoconnect_list() {
     fi
 
     # list
-    grep "^ONBOOT=${ON_OFF}" /etc/sysconfig/network-scripts/ifcfg-* | cut -d':' -f 1 | sed 's|.*/ifcfg-||g'
+    LIST=$(nmcli connection | awk '{ print $1 }' | grep -v "^NAME$")
+    for INTERFACE in ${LIST}
+    do
+        STATUS_LINE=$(nmcli connection show "${INTERFACE}" | grep connection.autoconnect:)
+        STATUS=$(echo "${STATUS_LINE}" | awk '{ print $2 }')
+        if [[ "${ON_OFF}" == "all" ]] || [[ "${STATUS}" == "${ON_OFF}" ]]; then
+            echo "${INTERFACE}"
+        fi
+    done
 }
 
 # Main
