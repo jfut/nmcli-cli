@@ -1,0 +1,78 @@
+version: 2
+
+project_name: nmcli-cli
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+report_sizes: true
+
+gomod:
+  gobinary: /bin/true
+
+builds:
+  - id: nmcli-cli
+    skip: true
+
+archives:
+  - id: binaries
+    meta: true
+    formats: ["tar.gz"]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_noarch"
+    builds_info:
+      group: root
+      owner: root
+      mode: 0755
+    files:
+      - src: nmcli-cli-*
+        dst: .
+        info:
+          mode: 0755
+          owner: root
+          group: root
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+checksum:
+  name_template: "checksums.txt"
+
+nfpms:
+  - id: nmcli-cli
+    meta: true
+    package_name: nmcli-cli
+    file_name_template: "{{ .ConventionalFileName }}"
+    description: |-
+      nmcli-cli is a fast updater for ipset IP sets
+    maintainer: Jun Futagawa <jfut@integ.jp>
+    license: MIT
+    vendor: nmcli-cli project
+    bindir: /usr/bin
+    section: utils
+    formats:
+      - apk
+      - deb
+      - rpm
+      - termux.deb
+      - archlinux
+    contents:
+      - src: nmcli-cli-*
+        dst: /usr/bin/
+        file_info:
+          mode: 0755
+          owner: root
+          group: root
+      - src: LICENSE
+        dst: /usr/share/licenses/nmcli-cli/LICENSE
+        file_info:
+          mode: 0644
+    deb:
+      lintian_overrides:
+        - changelog-file-missing-in-native-package

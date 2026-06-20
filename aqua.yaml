@@ -13,4 +13,6 @@ registries:
     - linux
 # aqua update-checksum --prune
 packages:
+- name: casey/just@1.53.0
 - name: koalaman/shellcheck@v0.11.0
+- name: goreleaser/goreleaser@v2.16.0
