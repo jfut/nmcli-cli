@@ -1,6 +1,56 @@
 {
   "checksums": [
     {
+      "id": "github_release/github.com/casey/just/1.53.0/just-1.53.0-aarch64-apple-darwin.tar.gz",
+      "checksum": "27F1361F2E4FB5D733837F1A9F80F85C237E5A36C75EE14961E59141713AA4ED",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/casey/just/1.53.0/just-1.53.0-aarch64-unknown-linux-musl.tar.gz",
+      "checksum": "F29D8E72380BC144465F632C7D59DA311205EEF2923D57511708B05B82F2E64F",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/casey/just/1.53.0/just-1.53.0-x86_64-apple-darwin.tar.gz",
+      "checksum": "BC345A26D40AE4697CB6B2F2CA04CDF1FBDC8C50EBA1B40684C8BF3F98555D72",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/casey/just/1.53.0/just-1.53.0-x86_64-pc-windows-msvc.zip",
+      "checksum": "02308AF0C174D3E0286F6BFC2B020258A3E12CD0C52C1D16FAC8EF2C12DEA0AF",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/casey/just/1.53.0/just-1.53.0-x86_64-unknown-linux-musl.tar.gz",
+      "checksum": "7FEDEB22C7E14D9EF1551E8B793700866D80F409F9884B0E80EBB65C11D4874D",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.16.0/goreleaser_Darwin_all.tar.gz",
+      "checksum": "6A102E4D588FD3553A9AC7321CA6023A9F205843F4861CA35BD337DFA9E72ECE",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.16.0/goreleaser_Linux_arm64.tar.gz",
+      "checksum": "0102D974373FCDEB77042D1F5897CAFFA193BE36620FDC6C1DA43A01EF8E10D3",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.16.0/goreleaser_Linux_x86_64.tar.gz",
+      "checksum": "EAAE05B5EBA07533BD0F06846B68C808399504784DF00C62EB219541FC04E5E2",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.16.0/goreleaser_Windows_arm64.zip",
+      "checksum": "1183C81863044CE9BAA89C1393C258949390B8DF683DF7CA959E9C718D7723C9",
+      "algorithm": "sha256"
+    },
+    {
+      "id": "github_release/github.com/goreleaser/goreleaser/v2.16.0/goreleaser_Windows_x86_64.zip",
+      "checksum": "6FE5EDA11F0BCAC8069AFF3EF3DCB0B11816C9E95F89773595564697A5278BC9",
+      "algorithm": "sha256"
+    },
+    {
       "id": "github_release/github.com/koalaman/shellcheck/v0.11.0/shellcheck-v0.11.0.darwin.aarch64.tar.xz",
       "checksum": "56AFFDD8DE5527894DCA6DC3D7E0A99A873B0F004D7AABC30AE407D3F48B0A79",
       "algorithm": "sha256"
