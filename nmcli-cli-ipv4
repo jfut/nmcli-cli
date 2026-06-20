@@ -2,19 +2,35 @@
 #
 # nmcli-cli-ipv4
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
+print_command() {
+    # Print the nmcli command in a reusable shell-quoted form.
+    printf '%q' "$1"
+    shift
+    printf ' %q' "$@"
+    printf '\n'
+}
+
 echo_or_execute() {
+    local RET
+
     if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
+        printf 'Applying: '
+        print_command "$@"
+        "$@"
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: command failed (${RET})." >&2
+            exit "${RET}"
+        fi
     else
-        ${ECHO_OR_EXECUTE} ${@}
+        print_command "$@"
     fi
 }
 
@@ -53,13 +69,13 @@ ipv4_set_dhcp() {
     local IF_NAME=${1:-}
 
     # DNS
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.dns \"\"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.dns ""
 
     # Gateway
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.gateway \"\"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.gateway ""
 
     # IP
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.addresses \"\" ipv4.method auto
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.addresses "" ipv4.method auto
 }
 
 ipv4_set_static() {
@@ -69,16 +85,16 @@ ipv4_set_static() {
     local IF_DNS=${4:-}
 
     # IP
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.addresses \"${IF_IP_SUBNET}\" ipv4.method manual
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.addresses "${IF_IP_SUBNET}" ipv4.method manual
 
     # Option: Gateway
     if [[ ! -z "${IF_GATEWAY}" ]]; then
-        echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.gateway \"${IF_GATEWAY}\"
+        echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.gateway "${IF_GATEWAY}"
     fi
 
     # Option: DNS
     if [[ ! -z "${IF_DNS}" ]]; then
-        echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.dns \"${IF_DNS}\"
+        echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.dns "${IF_DNS}"
     fi
 }
 
@@ -86,13 +102,13 @@ ipv4_set_disable() {
     local IF_NAME=${1:-}
 
     # DNS
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.dns \"\"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.dns ""
 
     # Gateway
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.gateway \"\"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.gateway ""
 
     # IP
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv4.addresses \"${IF_IP_SUBNET}\" ipv4.method disabled ipv6.method ignore
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.addresses "" ipv4.method disabled
 }
 
 ipv4_set() {
@@ -163,4 +179,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-

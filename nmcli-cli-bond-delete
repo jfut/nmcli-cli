@@ -2,19 +2,35 @@
 #
 # nmcli-cli-bond-delete
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
+print_command() {
+    # Print the nmcli command in a reusable shell-quoted form.
+    printf '%q' "$1"
+    shift
+    printf ' %q' "$@"
+    printf '\n'
+}
+
 echo_or_execute() {
+    local RET
+
     if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
+        printf 'Applying: '
+        print_command "$@"
+        "$@"
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: command failed (${RET})." >&2
+            exit "${RET}"
+        fi
     else
-        ${ECHO_OR_EXECUTE} ${@}
+        print_command "$@"
     fi
 }
 
@@ -48,18 +64,35 @@ check() {
 
 bond_delete() {
     local BOND_IF_NAME=${1:-}
+    local CONNECTION_LIST
+    local MASTER
+    local RET
+    local SLAVE_IF_NAME
+    local i
 
     # Find lower interfaces
-    INTERFACE_LIST=$(ls "/sys/class/net/${BOND_IF_NAME}/" | grep "^lower_" | sed 's|lower_||')
+    CONNECTION_LIST=$(nmcli -g NAME connection show)
+    RET=$?
+    if [[ ${RET} -ne 0 ]]; then
+        echo "Error: failed to list connections (${RET})." >&2
+        exit "${RET}"
+    fi
 
-    # Delete lower interfaces
-    for i in ${INTERFACE_LIST}
+    while IFS= read -r i
     do
-        echo_or_execute nmcli connection delete \"${i}\"
-    done
+        # Delete only slave profiles attached to the target master.
+        [[ -z "${i}" ]] && continue
+        MASTER=$(nmcli -g connection.master connection show "${i}")
+        [[ "${MASTER}" != "${BOND_IF_NAME}" ]] && continue
+        SLAVE_IF_NAME=$(nmcli -g connection.interface-name connection show "${i}")
+        echo_or_execute nmcli connection delete "${i}"
+        if [[ -n "${SLAVE_IF_NAME}" ]] && [[ "${SLAVE_IF_NAME}" != "--" ]]; then
+            echo_or_execute nmcli connection modify "${SLAVE_IF_NAME}" connection.autoconnect yes
+        fi
+    done <<< "${CONNECTION_LIST}"
 
     # Delete bond interface
-    echo_or_execute nmcli connection delete \"${BOND_IF_NAME}\"
+    echo_or_execute nmcli connection delete "${BOND_IF_NAME}"
 }
 
 # Main
@@ -97,4 +130,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-

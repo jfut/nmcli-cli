@@ -2,19 +2,35 @@
 #
 # nmcli-cli-vlan-add
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
+print_command() {
+    # Print the nmcli command in a reusable shell-quoted form.
+    printf '%q' "$1"
+    shift
+    printf ' %q' "$@"
+    printf '\n'
+}
+
 echo_or_execute() {
+    local RET
+
     if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
+        printf 'Applying: '
+        print_command "$@"
+        "$@"
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: command failed (${RET})." >&2
+            exit "${RET}"
+        fi
     else
-        ${ECHO_OR_EXECUTE} ${@}
+        print_command "$@"
     fi
 }
 
@@ -63,8 +79,8 @@ vlan_add() {
 
     # Add vlan interface
     echo_or_execute nmcli connection add type vlan ipv4.method disabled ipv6.method ignore \
-        con-name \"${VLAN_IF_NAME}\" ifname \"${VLAN_IF_NAME}\" dev \"${IF_NAME}\" \
-        id ${VLAN_ID}
+        con-name "${VLAN_IF_NAME}" ifname "${VLAN_IF_NAME}" dev "${IF_NAME}" \
+        id "${VLAN_ID}"
 
     cat << _EOF_
 
@@ -116,4 +132,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-

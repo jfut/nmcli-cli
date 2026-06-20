@@ -2,6 +2,9 @@
 
 nmcli-cli is a command line tool that wraps `nmcli` to use for simple use cases.
 
+By default, each command prints shell-ready `nmcli` commands without applying
+changes. Use `-x` to run them.
+
 - Device
   - [nmcli-cli-device-name](#nmcli-cli-device-name)
 - IPv4
@@ -26,7 +29,7 @@ nmcli-cli is a command line tool that wraps `nmcli` to use for simple use cases.
   - [nmcli-cli-bridge-delete](#nmcli-cli-bridge-delete)
 - Examples
   - [Example: Add Bonding + VLAN + Bridge interface](#example-add-bonding--vlan--bridge-interface)
-  - [Example: Delete Brdige + VLAN + Bonding interface](#example-delete-brdige--vlan--bonding-interface)
+  - [Example: Delete Bridge + VLAN + Bonding interface](#example-delete-bridge--vlan--bonding-interface)
 
 ## Device
 
@@ -93,9 +96,10 @@ Run examples:
 # [dhcp: echo only]
 # =================
 # nmcli-cli-ipv4 eno1 dhcp
+# echo only.
 nmcli connection modify "eno1" ipv4.dns ""
 nmcli connection modify "eno1" ipv4.gateway ""
-nmcli connection modify "eno1" ipv4.addresses "" ipv4.method dhcp
+nmcli connection modify eno1 ipv4.addresses "" ipv4.method auto
 
 # Next steps:
 # -> Restart the interface:
@@ -114,7 +118,7 @@ nmcli connection modify "eno1" ipv4.addresses "" ipv4.method dhcp
 # echo only.
 nmcli connection modify "eno1" ipv4.dns ""
 nmcli connection modify "eno1" ipv4.gateway ""
-nmcli connection modify "eno1" ipv4.addresses "" ipv4.method ignore
+nmcli connection modify eno1 ipv4.addresses "" ipv4.method disabled
 
 # Next steps:
 # -> Restart the interface:
@@ -171,8 +175,8 @@ Run examples:
 # nmcli-cli-ipv4-copy eno1 bond1
 # echo only.
 nmcli connection modify "bond1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
-nmcli connection modify "bond1" ipv4.gateway "192.168.1.1,10.0.0.2"
-nmcli connection modify "bond1" ipv4.dns "192.168.1.1"
+nmcli connection modify bond1 ipv4.gateway 192.168.1.1
+nmcli connection modify bond1 ipv4.dns "192.168.1.1,10.0.0.2"
 
 # Next steps:
 # -> Change IP address
@@ -183,29 +187,29 @@ nmcli connection modify "bond1" ipv4.dns "192.168.1.1"
 # -> Create a bond interface:
 #    nmcli-cli-bond-add bond1 mode=... "bond1" "ens2f0"
 # -> Create a vlan interface:
-#    nmcli-cli-vlan-add ".100" 100 "bond1"
+#    nmcli-cli-vlan-add "bond1.100" 100 "bond1"
 # -> Create a bridge interface:
-#    nmcli-cli-bridge-add br1 "bond1"
+#    nmcli-cli-bridge-add br1 "br1"
 
 # [copy ipv4: run it]
 # ===================
 # nmcli-cli-ipv4-copy -x bond1 br1
 Applying: nmcli connection modify "br1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
-Applying: nmcli connection modify "br1" ipv4.gateway "192.168.1.1,10.0.0.2"
-Applying: nmcli connection modify "br1" ipv4.dns "192.168.1.1"
+Applying: nmcli connection modify br1 ipv4.gateway 192.168.1.1
+Applying: nmcli connection modify br1 ipv4.dns "192.168.1.1,10.0.0.2"
 
 # Next steps:
 # -> Change IP address
-#    nmcli-cli-ipv4 "" ...
+#    nmcli-cli-ipv4 "br1" ...
 # -> Restart the interface:
-#    nmcli-cli-restart ""
+#    nmcli-cli-restart "br1"
 #
 # -> Create a bond interface:
 #    nmcli-cli-bond-add bond1 mode=... "bond1" "ens2f0"
 # -> Create a vlan interface:
-#    nmcli-cli-vlan-add ".100" 100 "bond1"
+#    nmcli-cli-vlan-add "br1.100" 100 "br1"
 # -> Create a bridge interface:
-#    nmcli-cli-bridge-add br1 "bond1"
+#    nmcli-cli-bridge-add br1 "br1"
 ```
 
 ## IPv6
@@ -215,7 +219,7 @@ Applying: nmcli connection modify "br1" ipv4.dns "192.168.1.1"
 ```
 Usage:
 
-    nmcli-cli-ipv6 [-n] [-x] NAME dhcp|static|disable IP_SUBNET [GATEWAY] [DNS]
+    nmcli-cli-ipv6 [-n] [-x] NAME auto|dhcp|static|manual|link-local|disable|ignore IP_SUBNET [GATEWAY] [DNS]
 
     Options:
         -n No interface check (Default: check interface)
@@ -313,41 +317,40 @@ Run examples:
 # ======================
 # nmcli-cli-ipv6-copy eno1 bond1
 # echo only.
-nmcli connection modify "bond1" ipv6.addresses "2001:db8:1::101/48"
-nmcli connection modify "bond1" ipv6.method manual
+nmcli connection modify bond1 ipv6.addresses 2001:db8:1::101/48 ipv6.method manual
 nmcli connection modify "bond1" ipv6.gateway "2001:db8:1::1"
 nmcli connection modify "bond1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 
 # Next steps:
 # -> Change IP address
-#    nmcli-cli-ipv4 "bond1" ...
+#    nmcli-cli-ipv6 "bond1" ...
 # -> Restart the interface:
 #    nmcli-cli-restart "bond1"
 #
 # -> Create a bond interface:
 #    nmcli-cli-bond-add bond1 mode=... "bond1" "ens2f0"
 # -> Create a vlan interface:
-#    nmcli-cli-vlan-add ".100" 100 "bond1"
+#    nmcli-cli-vlan-add "bond1.100" 100 "bond1"
 # -> Create a bridge interface:
 #    nmcli-cli-bridge-add br1 "bond1"
 
 # [copy ipv6: run it]
 # ===================
 # nmcli-cli-ipv6-copy -x bond1 br1
-Applying: nmcli connection modify "bond1" ipv6.addresses "2001:db8:1::101/48" ipv6.method manual
-Applying: nmcli connection modify "bond1" ipv6.gateway "2001:db8:1::1"
-Applying: nmcli connection modify "bond1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
+Applying: nmcli connection modify br1 ipv6.addresses 2001:db8:1::101/48 ipv6.method manual
+Applying: nmcli connection modify br1 ipv6.gateway 2001:db8:1::1
+Applying: nmcli connection modify br1 ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 
 # Next steps:
 # -> Change IP address
-#    nmcli-cli-ipv4 "br1" ...
+#    nmcli-cli-ipv6 "br1" ...
 # -> Restart the interface:
 #    nmcli-cli-restart "br1"
 #
 # -> Create a bond interface:
 #    nmcli-cli-bond-add bond1 mode=... "br1" "ens2f0"
 # -> Create a vlan interface:
-#    nmcli-cli-vlan-add ".100" 100 "br1"
+#    nmcli-cli-vlan-add "br1.100" 100 "br1"
 # -> Create a bridge interface:
 #    nmcli-cli-bridge-add br1 "br1"
 ```
@@ -376,14 +379,17 @@ Run examples:
 # ====================
 # nmcli-cli-restart eno1
 # echo only.
-nmcli connection down "eno1"; nmcli connection up "eno1"
+systemd-run --on-active=2s --unit=nmcli-cli-restart-up-12345 "$(command -v nmcli)" connection up eno1
+nmcli connection down eno1
 
 # [restart run it]
 # ================
 # nmcli-cli-restart -x eno1
-Applying: nmcli connection down "eno1"; nmcli connection up "eno1"
+Applying: systemd-run --on-active=2s --unit=nmcli-cli-restart-up-12345 /usr/bin/nmcli connection up eno1
+Running timer as unit: nmcli-cli-restart-up-12345.timer
+Will run service as unit: nmcli-cli-restart-up-12345.service
+Applying: nmcli connection down eno1
 Connection 'eno1' successfully deactivated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/555)
-Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/556)
 ```
 
 ### nmcli-cli-autoconnect-list
@@ -600,18 +606,24 @@ Run examples:
 # nmcli-cli-bond-delete bond1
 # echo only.
 nmcli connection delete "bond-slave-eno1"
+nmcli connection modify "eno1" connection.autoconnect yes
 nmcli connection delete "bond-slave-eno3"
+nmcli connection modify "eno3" connection.autoconnect yes
 nmcli connection delete "bond-slave-ens2f0"
+nmcli connection modify "ens2f0" connection.autoconnect yes
 nmcli connection delete "bond1"
 
 # [delete: run it]
 # ================
 Applying: nmcli connection delete "bond-slave-eno1"
 Connection 'bond-slave-ens38' (5de09d50-69fc-4672-9a12-413424f16647) successfully deleted.
+Applying: nmcli connection modify eno1 connection.autoconnect yes
 Applying: nmcli connection delete "bond-slave-eno3"
 Connection 'bond-slave-ens39' (5c8b4d7a-7771-460c-a514-3bb8819a6470) successfully deleted.
+Applying: nmcli connection modify eno3 connection.autoconnect yes
 Applying: nmcli connection delete "bond-slave-ens2f0"
 Connection 'bond-slave-ens40' (305d3404-0f46-43b5-a087-e4e194d9597e) successfully deleted.
+Applying: nmcli connection modify ens2f0 connection.autoconnect yes
 Applying: nmcli connection delete "bond1"
 Connection 'bond1' (eaf6cc9a-0a7a-42cd-8b01-febc62d2f63d) successfully deleted.
 ```
@@ -648,11 +660,11 @@ nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name 
 #    cat /proc/net/vlan/eno1.100
 #
 # -> Set IP address
-#    nmcli-cli-ipv4 "eno1" ...
-#    nmcli-cli-ipv6 "eno1" ...
+#    nmcli-cli-ipv4 "eno1.100" ...
+#    nmcli-cli-ipv6 "eno1.100" ...
 #
 # -> Create a bridge interface:
-#    nmcli-cli-bridge-add br1 "eno1"
+#    nmcli-cli-bridge-add br1 "eno1.100"
 
 
 # [vlan add: dummy interface + VLAN ID 100 + echo only]
@@ -663,14 +675,14 @@ nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name 
 
 # Next steps:
 # -> Check vlan status
-#    cat /proc/net/vlan/dummy1.100
+#    cat /proc/net/vlan/vlan.100
 #
 # -> Set IP address
-#    nmcli-cli-ipv4 "dummy1" ...
-#    nmcli-cli-ipv6 "dummy1" ...
+#    nmcli-cli-ipv4 "vlan.100" ...
+#    nmcli-cli-ipv6 "vlan.100" ...
 #
 # -> Create a bridge interface:
-#    nmcli-cli-bridge-add br1 "dummy1"
+#    nmcli-cli-bridge-add br1 "vlan.100"
 
 # [vlan add: Bonding + VLAN ID 100 + run it]
 # ==========================================
@@ -683,11 +695,11 @@ Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully added
 #    cat /proc/net/vlan/bond1.100
 #
 # -> Set IP address
-#    nmcli-cli-ipv4 "bond1" ...
-#    nmcli-cli-ipv6 "bond1" ...
+#    nmcli-cli-ipv4 "bond1.100" ...
+#    nmcli-cli-ipv6 "bond1.100" ...
 #
 # -> Create a bridge interface:
-#    nmcli-cli-bridge-add br1 "bond1"
+#    nmcli-cli-bridge-add br1 "bond1.100"
 ```
 
 ### nmcli-cli-vlan-delete
@@ -718,7 +730,7 @@ nmcli connection delete "eno1.100"
 
 # [vlan delete: run it]
 # =====================
-# nmcli-cli-vlan-delete -x eno1.100
+# nmcli-cli-vlan-delete -x bond1.100
 Applying: nmcli connection delete "bond1.100"
 Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully deleted.
 ```
@@ -730,7 +742,7 @@ Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully delet
 ```
 Usage:
 
-    nmcli-cli-bridge-add [-n] [-x] NEW_BRDIGE_IF_NAME IF_SLAVE
+    nmcli-cli-bridge-add [-n] [-x] NEW_BRIDGE_IF_NAME IF_SLAVE
 
     Options:
         -n No interface check (Default: check interface)
@@ -746,7 +758,7 @@ Run examples:
 ```
 # [bridge add: echo only]
 # =======================
-nmcli-cli-bridge-add br1 eno1
+# nmcli-cli-bridge-add br1 eno1
 # echo only.
 nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name "br1" ifname "br1"
 nmcli connection modify "eno1" connection.slave-type bridge connection.master "br1"
@@ -866,7 +878,7 @@ nmcli connection modify "br1.100" ipv6.gateway "2001:db8:1::1"
 nmcli connection modify "br1.100" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 ```
 
-### Example: Delete Brdige + VLAN + Bonding interface
+### Example: Delete Bridge + VLAN + Bonding interface
 
 - Interfaces: br1.100 + bond1.100 + bond1
 
@@ -883,8 +895,11 @@ nmcli connection delete "bond1.100"
 # nmcli-cli-bond-delete -n bond1
 # echo only.
 nmcli connection delete "bond-slave-eno1"
+nmcli connection modify "eno1" connection.autoconnect yes
 nmcli connection delete "bond-slave-eno3"
+nmcli connection modify "eno3" connection.autoconnect yes
 nmcli connection delete "bond-slave-ens2f0"
+nmcli connection modify "ens2f0" connection.autoconnect yes
 nmcli connection delete "bond1"
 ```
 
@@ -895,4 +910,3 @@ MIT
 ## Author
 
 Jun Futagawa (jfut)
-

@@ -2,19 +2,35 @@
 #
 # nmcli-cli-ipv6
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
+print_command() {
+    # Print the nmcli command in a reusable shell-quoted form.
+    printf '%q' "$1"
+    shift
+    printf ' %q' "$@"
+    printf '\n'
+}
+
 echo_or_execute() {
+    local RET
+
     if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
+        printf 'Applying: '
+        print_command "$@"
+        "$@"
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: command failed (${RET})." >&2
+            exit "${RET}"
+        fi
     else
-        ${ECHO_OR_EXECUTE} ${@}
+        print_command "$@"
     fi
 }
 
@@ -22,7 +38,7 @@ usage() {
     cat << _EOF_
 Usage:
 
-    $0 [-n] [-x] NAME dhcp|static|disable IP_SUBNET [GATEWAY] [DNS]
+    $0 [-n] [-x] NAME auto|dhcp|static|manual|link-local|disable|ignore IP_SUBNET [GATEWAY] [DNS]
 
     Options:
         -n No interface check (Default: check interface)
@@ -56,13 +72,13 @@ ipv6_set_auto_method() {
     local IF_METHOD=${2:-}
 
     # DNS
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.dns \"\"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv6.dns ""
 
     # Gateway
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.gateway \"\"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv6.gateway ""
 
     # IP
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.addresses \"\" ipv6.method "${IF_METHOD}"
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv6.addresses "" ipv6.method "${IF_METHOD}"
 }
 
 ipv6_set_static() {
@@ -72,16 +88,16 @@ ipv6_set_static() {
     local IF_DNS=${4:-}
 
     # IP
-    echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.addresses \"${IF_IP_SUBNET}\" ipv6.method manual
+    echo_or_execute nmcli connection modify "${IF_NAME}" ipv6.addresses "${IF_IP_SUBNET}" ipv6.method manual
 
     # Option: Gateway
     if [[ ! -z "${IF_GATEWAY}" ]]; then
-        echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.gateway \"${IF_GATEWAY}\"
+        echo_or_execute nmcli connection modify "${IF_NAME}" ipv6.gateway "${IF_GATEWAY}"
     fi
 
     # Option: DNS
     if [[ ! -z "${IF_DNS}" ]]; then
-        echo_or_execute nmcli connection modify \"${IF_NAME}\" ipv6.dns \"${IF_DNS}\"
+        echo_or_execute nmcli connection modify "${IF_NAME}" ipv6.dns "${IF_DNS}"
     fi
 }
 
@@ -100,8 +116,6 @@ ipv6_set() {
         ipv6_set_auto_method "${IF_NAME}" "link-local"
     elif [[ "${IF_METHOD}" = "static" ]] || [[ "${IF_METHOD}" = "manual" ]]; then
         ipv6_set_static "${IF_NAME}" "${IF_IP_SUBNET}" "${IF_GATEWAY}" "${IF_DNS}"
-    elif [[ "${IF_METHOD}" = "link-local" ]]; then
-        ipv6_set_auto_method "${IF_NAME}" "link-local"
     elif [[ "${IF_METHOD}" = "disable" ]] || [[ "${IF_METHOD}" = "ignore" ]]; then
         ipv6_set_auto_method "${IF_NAME}" "ignore"
     else
@@ -159,4 +173,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-
