@@ -2,20 +2,43 @@
 #
 # nmcli-cli-ipv6-copy
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
+print_command() {
+    # Print the nmcli command in a reusable shell-quoted form.
+    printf '%q' "$1"
+    shift
+    printf ' %q' "$@"
+    printf '\n'
+}
+
 echo_or_execute() {
+    local RET
+
     if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
+        printf 'Applying: '
+        print_command "$@"
+        "$@"
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: command failed (${RET})." >&2
+            exit "${RET}"
+        fi
     else
-        ${ECHO_OR_EXECUTE} ${@}
+        print_command "$@"
     fi
+}
+
+nmcli_value() {
+    # Convert only nmcli's unset marker to an empty string.
+    local value=${1:-}
+    [[ "${value}" == "--" ]] && value=""
+    printf '%s' "${value}"
 }
 
 usage() {
@@ -44,7 +67,7 @@ check() {
     nmcli connection show "${SRC_IF_NAME}" > /dev/null 2>&1
     RET=$?
     if [[ ${RET} -ne 0 ]]; then
-        echo "Error: Source interface "${SRC_IF_NAME}" not found."
+        echo "Error: Source interface \"${SRC_IF_NAME}\" not found."
         exit 1
     fi
 
@@ -52,7 +75,7 @@ check() {
     nmcli connection show "${DEST_IF_NAME}" > /dev/null 2>&1
     RET=$?
     if [[ ${RET} -ne 0 ]]; then
-        echo "Error: Destination interface "${DEST_IF_NAME}" not found."
+        echo "Error: Destination interface \"${DEST_IF_NAME}\" not found."
         exit 1
     fi
 }
@@ -62,30 +85,30 @@ ipv6_copy() {
     local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
 
     # IP
-    SRC_IP_SUBNET=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.addresses:" | awk '{ print $2 }' | tr -d '-')
-    SRC_METHOD=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.method:" | awk '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.addresses \"${SRC_IP_SUBNET}\" ipv6.method "${SRC_METHOD}"
+    SRC_IP_SUBNET=$(nmcli_value "$(nmcli -g ipv6.addresses connection show "${SRC_IF_NAME}")")
+    SRC_METHOD=$(nmcli_value "$(nmcli -g ipv6.method connection show "${SRC_IF_NAME}")")
+    echo_or_execute nmcli connection modify "${DEST_IF_NAME}" ipv6.addresses "${SRC_IP_SUBNET}" ipv6.method "${SRC_METHOD}"
 
     # Gateway
-    SRC_GATEWAY=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.gateway:" | awk '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.gateway \"${SRC_GATEWAY}\"
+    SRC_GATEWAY=$(nmcli_value "$(nmcli -g ipv6.gateway connection show "${SRC_IF_NAME}")")
+    echo_or_execute nmcli connection modify "${DEST_IF_NAME}" ipv6.gateway "${SRC_GATEWAY}"
 
     # DNS
-    SRC_DNS=$(nmcli connection show "${SRC_IF_NAME}" | grep "^ipv6.dns:" | awk '{ print $2 }' | tr -d '-')
-    echo_or_execute nmcli connection modify \"${DEST_IF_NAME}\" ipv6.dns \"${SRC_DNS}\"
+    SRC_DNS=$(nmcli_value "$(nmcli -g ipv6.dns connection show "${SRC_IF_NAME}")")
+    echo_or_execute nmcli connection modify "${DEST_IF_NAME}" ipv6.dns "${SRC_DNS}"
 
     cat << _EOF_
 
 # Next steps:
 # -> Change IP address
-#    nmcli-cli-ipv4 "${DEST_IF_NAME}" ...
+#    nmcli-cli-ipv6 "${DEST_IF_NAME}" ...
 # -> Restart the interface:
 #    nmcli-cli-restart "${DEST_IF_NAME}"
 #
 # -> Create a bond interface:
 #    nmcli-cli-bond-add bond1 mode=... "${DEST_IF_NAME}" "ens2f0"
 # -> Create a vlan interface:
-#    nmcli-cli-vlan-add "${IF_NAME}.100" 100 "${DEST_IF_NAME}"
+#    nmcli-cli-vlan-add "${DEST_IF_NAME}.100" 100 "${DEST_IF_NAME}"
 # -> Create a bridge interface:
 #    nmcli-cli-bridge-add br1 "${DEST_IF_NAME}"
 _EOF_
@@ -126,4 +149,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-

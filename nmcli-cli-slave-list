@@ -2,7 +2,7 @@
 #
 # nmcli-cli-slave-list
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
@@ -22,14 +22,14 @@ _EOF_
 
 slave_list() {
     local IF_NAME=${1:-}
+    local i
 
     # Find lower interfaces
     TARGET="/sys/class/net/${IF_NAME}/"
     if [[ -e "${TARGET}" ]]; then
-        INTERFACE_LIST=$(ls "${TARGET}" | grep "^lower_" | sed 's|lower_||')
-        for i in ${INTERFACE_LIST}
-        do
-            echo "${i}"
+        for i in "${TARGET}"/lower_*; do
+            [[ -e "${i}" ]] || continue
+            echo "${i##*/lower_}"
         done
     fi
 }
@@ -42,4 +42,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-

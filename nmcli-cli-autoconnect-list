@@ -2,7 +2,7 @@
 #
 # nmcli-cli-autoconnect-list
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
@@ -35,12 +35,10 @@ autoconnect_list() {
         exit 1
     fi
 
-    # list
-    LIST=$(nmcli connection | awk '{ print $1 }' | grep -v "^NAME$")
-    for INTERFACE in ${LIST}
+    # Read machine-friendly nmcli output so connection names may contain spaces.
+    nmcli -g NAME connection show | while IFS= read -r INTERFACE
     do
-        STATUS_LINE=$(nmcli connection show "${INTERFACE}" | grep connection.autoconnect:)
-        STATUS=$(echo "${STATUS_LINE}" | awk '{ print $2 }')
+        STATUS=$(nmcli -g connection.autoconnect connection show "${INTERFACE}")
         if [[ "${ON_OFF}" == "all" ]] || [[ "${STATUS}" == "${ON_OFF}" ]]; then
             echo "${INTERFACE}"
         fi
@@ -55,4 +53,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-

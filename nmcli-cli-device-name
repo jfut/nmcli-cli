@@ -2,19 +2,35 @@
 #
 # nmcli-cli-device-name
 #
-# Copyright (c) 2019 Jun Futagawa (jfut)
+# Copyright (c) 2019-2026 Jun Futagawa (jfut)
 #
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
 ECHO_OR_EXECUTE="echo"
 
+print_command() {
+    # Print the nmcli command in a reusable shell-quoted form.
+    printf '%q' "$1"
+    shift
+    printf ' %q' "$@"
+    printf '\n'
+}
+
 echo_or_execute() {
+    local RET
+
     if [[ -z "${ECHO_OR_EXECUTE}" ]]; then
-        echo "Applying: ${@}"
-        eval ${@}
+        printf 'Applying: '
+        print_command "$@"
+        "$@"
+        RET=$?
+        if [[ ${RET} -ne 0 ]]; then
+            echo "Error: command failed (${RET})." >&2
+            exit "${RET}"
+        fi
     else
-        ${ECHO_OR_EXECUTE} ${@}
+        print_command "$@"
     fi
 }
 
@@ -51,12 +67,12 @@ device_name_set() {
     local DEVICE=$1
     local NEW_IF_NAME=${2:-${DEVICE}}
 
-    CURRENT_NAME=$(nmcli device show "${DEVICE}" | grep "^GENERAL.CONNECTION:" | cut -d':' -f 2 | xargs)
+    CURRENT_NAME=$(nmcli -g GENERAL.CONNECTION device show "${DEVICE}")
     if [[ "${CURRENT_NAME}" = "--" ]]; then
         CURRENT_NAME=${DEVICE}
     fi
 
-    echo_or_execute nmcli connection modify \"${CURRENT_NAME}\" connection.id \"${NEW_IF_NAME}\"
+    echo_or_execute nmcli connection modify "${CURRENT_NAME}" connection.id "${NEW_IF_NAME}"
 }
 
 # Main
@@ -94,4 +110,3 @@ main() {
 }
 
 [[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
-
