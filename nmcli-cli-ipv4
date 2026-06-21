@@ -38,7 +38,8 @@ usage() {
     cat << _EOF_
 Usage:
 
-    $0 [-n] [-x] NAME dhcp|static|disable IP_SUBNET [GATEWAY] [DNS]
+    $0 [-n] [-x] NAME dhcp|disable
+    $0 [-n] [-x] NAME static IP_SUBNET [GATEWAY] [DNS]
 
     Options:
         -n No interface check (Default: check interface)
@@ -117,16 +118,36 @@ ipv4_set_disable() {
     echo_or_execute nmcli connection modify "${IF_NAME}" ipv4.addresses "" ipv4.method disabled
 }
 
+validate_args() {
+    local IF_METHOD=${2:-}
+    local IF_IP_SUBNET=${3:-}
+
+    if [[ "${IF_METHOD}" != "dhcp" ]] && [[ "${IF_METHOD}" != "static" ]] && [[ "${IF_METHOD}" != "disable" ]]; then
+        echo "Error: method \"${IF_METHOD}\" is invalid. (dhcp|static|disable) are supported." >&2
+        exit 1
+    fi
+
+    # Prevent manual/static mode from clearing addresses by accident.
+    if [[ "${IF_METHOD}" = "static" ]] && [[ -z "${IF_IP_SUBNET}" ]]; then
+        echo "Error: IP_SUBNET is required for static IPv4 configuration." >&2
+        exit 1
+    fi
+}
+
 ipv4_set() {
-    IF_NAME=${1:-}
-    IF_METHOD=${2:-}
-    IF_IP_SUBNET=${3:-}
-    IF_GATEWAY=${4:-}
-    IF_DNS=${5:-}
+    local IF_NAME=${1:-}
+    local IF_METHOD=${2:-}
+    local IF_IP_SUBNET=${3:-}
+    local IF_GATEWAY=${4:-}
+    local IF_DNS=${5:-}
 
     if [[ "${IF_METHOD}" = "dhcp" ]]; then
         ipv4_set_dhcp "${IF_NAME}"
     elif [[ "${IF_METHOD}" = "static" ]]; then
+        if [[ -z "${IF_IP_SUBNET}" ]]; then
+            echo "Error: IP_SUBNET is required for static IPv4 configuration." >&2
+            exit 1
+        fi
         ipv4_set_static "${IF_NAME}" "${IF_IP_SUBNET}" "${IF_GATEWAY}" "${IF_DNS}"
     elif [[ "${IF_METHOD}" = "disable" ]]; then
         ipv4_set_disable "${IF_NAME}"
@@ -171,11 +192,13 @@ main() {
     done
     shift $((OPTIND - 1))
 
-    [[ $# -lt 1 ]] && usage && exit 1
+    [[ $# -lt 2 ]] && usage && exit 1
 
     if [[ "${NO_CHECK}" = "no" ]]; then
         check "${@}"
     fi
+
+    validate_args "${@}"
 
     if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
         echo "# ${ECHO_OR_EXECUTE} only."
