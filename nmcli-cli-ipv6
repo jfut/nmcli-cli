@@ -7,6 +7,7 @@
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
+VERSION="1.2.0"
 ECHO_OR_EXECUTE="echo"
 
 print_command() {
@@ -35,11 +36,16 @@ echo_or_execute() {
 }
 
 usage() {
+    local COMMAND_NAME
+    COMMAND_NAME="$(basename "${0}")"
+
     cat << _EOF_
+${COMMAND_NAME} ${VERSION}
+
 Usage:
 
-    $0 [-n] [-x] NAME auto|dhcp|link-local|disable|ignore
-    $0 [-n] [-x] NAME static|manual IP_SUBNET [GATEWAY] [DNS]
+    ${COMMAND_NAME} [-n] [-x] NAME auto|dhcp|link-local|disable|ignore
+    ${COMMAND_NAME} [-n] [-x] NAME static|manual IP_SUBNET [GATEWAY] [DNS]
 
     Options:
         -n No interface check (Default: check interface)
@@ -51,14 +57,13 @@ Usage:
         The first IP_SUBNET is the primary IP address.
 
     Examples:
-        $0 eno1 auto
-        $0 eno1 dhcp
-        $0 eno1 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
-        $0 eno1 static 2001:db8:1::101/48
-        $0 eno1 static 2001:db8:1::101/48,2001:db8:2::201/64
-        $0 eno1 link-local
-        $0 eno1 disable
-
+        ${COMMAND_NAME} eno1 auto
+        ${COMMAND_NAME} eno1 dhcp
+        ${COMMAND_NAME} eno1 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
+        ${COMMAND_NAME} eno1 static 2001:db8:1::101/48
+        ${COMMAND_NAME} eno1 static 2001:db8:1::101/48,2001:db8:2::201/64
+        ${COMMAND_NAME} eno1 link-local
+        ${COMMAND_NAME} eno1 disable
 _EOF_
 }
 

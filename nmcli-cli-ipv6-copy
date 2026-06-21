@@ -7,6 +7,7 @@
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
+VERSION="1.2.0"
 ECHO_OR_EXECUTE="echo"
 
 print_command() {
@@ -43,21 +44,25 @@ nmcli_value() {
 }
 
 usage() {
+    local COMMAND_NAME
+    COMMAND_NAME="$(basename "${0}")"
+
     cat << _EOF_
+${COMMAND_NAME} ${VERSION}
+
 Usage:
 
-    $0 [-n] [-x] SRC_IF_NAME DEST_IF_NAME
+    ${COMMAND_NAME} [-n] [-x] SRC_IF_NAME DEST_IF_NAME
 
     Options:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
     Examples:
-        $0 eno1 bond1
-        $0 bond1 br1
-        $0 eno1 bond1 (copy primary and secondary addresses)
-        $0 eno1 (show current configuration)
-
+        ${COMMAND_NAME} eno1 bond1
+        ${COMMAND_NAME} bond1 br1
+        ${COMMAND_NAME} eno1 bond1 (copy primary and secondary addresses)
+        ${COMMAND_NAME} eno1 (show current configuration)
 _EOF_
 }
 

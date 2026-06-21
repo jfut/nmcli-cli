@@ -7,6 +7,7 @@
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
+VERSION="1.2.0"
 ECHO_OR_EXECUTE="echo"
 
 print_command() {
@@ -35,20 +36,24 @@ echo_or_execute() {
 }
 
 usage() {
+    local COMMAND_NAME
+    COMMAND_NAME="$(basename "${0}")"
+
     cat << _EOF_
+${COMMAND_NAME} ${VERSION}
+
 Usage:
 
-    $0 [-n] [-x] VLAN_IF_NAME
+    ${COMMAND_NAME} [-n] [-x] VLAN_IF_NAME
 
     Options:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
     Examples:
-        $0 eno1.100
-        $0 bond1.100
-        $0 vlan.100
-
+        ${COMMAND_NAME} eno1.100
+        ${COMMAND_NAME} bond1.100
+        ${COMMAND_NAME} vlan.100
 _EOF_
 }
 

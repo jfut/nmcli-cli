@@ -7,6 +7,7 @@
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
+VERSION="1.2.0"
 ECHO_OR_EXECUTE="echo"
 
 print_command() {
@@ -35,19 +36,23 @@ echo_or_execute() {
 }
 
 usage() {
+    local COMMAND_NAME
+    COMMAND_NAME="$(basename "${0}")"
+
     cat << _EOF_
+${COMMAND_NAME} ${VERSION}
+
 Usage:
 
-    $0 [-n] [-x] NEW_BOND_IF_NAME BOND_OPTIONS IF_SLAVE1 IF_SLAVE2 [IF_SLAVE3...]
+    ${COMMAND_NAME} [-n] [-x] NEW_BOND_IF_NAME BOND_OPTIONS IF_SLAVE1 IF_SLAVE2 [IF_SLAVE3...]
 
     Options:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
     Examples:
-        $0 bond1 mode=active-backup eno1 ens2f0
-        $0 bond1 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3 eno1 eno3 ens2f0
-
+        ${COMMAND_NAME} bond1 mode=active-backup eno1 ens2f0
+        ${COMMAND_NAME} bond1 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3 eno1 eno3 ens2f0
 _EOF_
 }
 
