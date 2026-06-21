@@ -126,4 +126,4 @@ main() {
     restart "${@}"
 }
 
-[[ ${#BASH_SOURCE[@]} = 1 ]] && main "${@}"
+[[ "${BASH_SOURCE[0]}" == "$0" ]] && main "$@"
