@@ -38,7 +38,7 @@ usage() {
     cat << _EOF_
 Usage:
 
-    $0 [-n] [-x] IF_NAME ON|OFF
+    $0 [-n] [-x] IF_NAME yes|no or on|off
 
     Options:
         -n No interface check (Default: check interface)
@@ -63,9 +63,30 @@ check() {
     fi
 }
 
+validate_args() {
+    local ON_OFF=${2:-}
+
+    # Accept user-friendly aliases, but reject values nmcli cannot use here.
+    if [[ "${ON_OFF}" != "on" ]] && [[ "${ON_OFF}" != "yes" ]] && \
+        [[ "${ON_OFF}" != "off" ]] && [[ "${ON_OFF}" != "no" ]]; then
+        echo "Error: option \"${ON_OFF}\" is invalid." >&2
+        exit 1
+    fi
+}
+
 autoconnect_set() {
     local IF_NAME=${1:-}
     local ON_OFF=${2:-}
+
+    # Normalize user-friendly aliases to nmcli's autoconnect values.
+    if [[ "${ON_OFF}" == "on" ]] || [[ "${ON_OFF}" == "yes" ]]; then
+        ON_OFF="yes"
+    elif [[ "${ON_OFF}" == "off" ]] || [[ "${ON_OFF}" == "no" ]]; then
+        ON_OFF="no"
+    else
+        echo "Error: option \"${ON_OFF}\" is invalid." >&2
+        exit 1
+    fi
 
     echo_or_execute nmcli connection modify "${IF_NAME}" connection.autoconnect "${ON_OFF}"
 }
@@ -96,6 +117,8 @@ main() {
     if [[ "${NO_CHECK}" = "no" ]]; then
         check "${@}"
     fi
+
+    validate_args "${@}"
 
     if [[ "${ECHO_OR_EXECUTE}" = "echo" ]]; then
         echo "# ${ECHO_OR_EXECUTE} only."

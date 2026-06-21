@@ -56,18 +56,18 @@ Run examples:
 # ===================
 # nmcli-cli-device-name eno1
 # echo only.
-nmcli connection modify "Wired connection 1" connection.id "eno1"
+nmcli connection modify Wired\ connection\ 1 connection.id eno1
 
 # [rename: dummy interface + echo only]
 # =====================================
 # nmcli-cli-device-name -n dummy1 "New Name 1"
 # echo only.
-nmcli connection modify "dummy1" connection.id "New Name 1"
+nmcli connection modify dummy1 connection.id New\ Name\ 1
 
 # [rename: run it]
 # ================
 # nmcli-cli-device-name -x eno1
-Applying: nmcli connection modify "Wired connection 1" connection.id "eno1"
+Applying: nmcli connection modify Wired\ connection\ 1 connection.id eno1
 ```
 
 ## IPv4
@@ -77,7 +77,8 @@ Applying: nmcli connection modify "Wired connection 1" connection.id "eno1"
 ```
 Usage:
 
-    nmcli-cli-ipv4 [-n] [-x] NAME dhcp|static|disable IP_SUBNET [GATEWAY] [DNS]
+    nmcli-cli-ipv4 [-n] [-x] NAME dhcp|disable
+    nmcli-cli-ipv4 [-n] [-x] NAME static IP_SUBNET [GATEWAY] [DNS]
 
     Options:
         -n No interface check (Default: check interface)
@@ -103,9 +104,9 @@ Run examples:
 # =================
 # nmcli-cli-ipv4 eno1 dhcp
 # echo only.
-nmcli connection modify "eno1" ipv4.dns ""
-nmcli connection modify "eno1" ipv4.gateway ""
-nmcli connection modify eno1 ipv4.addresses "" ipv4.method auto
+nmcli connection modify eno1 ipv4.dns ''
+nmcli connection modify eno1 ipv4.gateway ''
+nmcli connection modify eno1 ipv4.addresses '' ipv4.method auto
 
 # Next steps:
 # -> Restart the interface:
@@ -122,7 +123,7 @@ nmcli connection modify eno1 ipv4.addresses "" ipv4.method auto
 # ==========================================
 # nmcli-cli-ipv4 eno1 static 192.168.1.101/24,10.0.0.201/23
 # echo only.
-nmcli connection modify eno1 ipv4.addresses 192.168.1.101/24,10.0.0.201/23 ipv4.method manual
+nmcli connection modify eno1 ipv4.addresses 192.168.1.101/24\,10.0.0.201/23 ipv4.method manual
 
 # Next steps:
 # -> Restart the interface:
@@ -139,9 +140,9 @@ nmcli connection modify eno1 ipv4.addresses 192.168.1.101/24,10.0.0.201/23 ipv4.
 # ======================================
 # nmcli-cli-ipv4 -n eno1 disable
 # echo only.
-nmcli connection modify "eno1" ipv4.dns ""
-nmcli connection modify "eno1" ipv4.gateway ""
-nmcli connection modify eno1 ipv4.addresses "" ipv4.method disabled
+nmcli connection modify eno1 ipv4.dns ''
+nmcli connection modify eno1 ipv4.gateway ''
+nmcli connection modify eno1 ipv4.addresses '' ipv4.method disabled
 
 # Next steps:
 # -> Restart the interface:
@@ -157,9 +158,9 @@ nmcli connection modify eno1 ipv4.addresses "" ipv4.method disabled
 # [static: run it]
 # ================
 # nmcli-cli-ipv4 -x eno1 static 192.168.1.101/24 192.168.1.1 192.168.1.1,10.0.0.2
-Applying: nmcli connection modify "eno1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
-Applying: nmcli connection modify "eno1" ipv4.gateway "192.168.1.1"
-Applying: nmcli connection modify "eno1" ipv4.dns "192.168.1.1,10.0.0.2"
+Applying: nmcli connection modify eno1 ipv4.addresses 192.168.1.101/24 ipv4.method manual
+Applying: nmcli connection modify eno1 ipv4.gateway 192.168.1.1
+Applying: nmcli connection modify eno1 ipv4.dns 192.168.1.1\,10.0.0.2
 
 # Next steps:
 # -> Restart the interface:
@@ -198,9 +199,9 @@ Run examples:
 # ======================
 # nmcli-cli-ipv4-copy eno1 bond1
 # echo only.
-nmcli connection modify bond1 ipv4.addresses 192.168.1.101/24,192.168.1.102/24 ipv4.method manual
+nmcli connection modify bond1 ipv4.addresses 192.168.1.101/24\,192.168.1.102/24 ipv4.method manual
 nmcli connection modify bond1 ipv4.gateway 192.168.1.1
-nmcli connection modify bond1 ipv4.dns "192.168.1.1,10.0.0.2"
+nmcli connection modify bond1 ipv4.dns 192.168.1.1\,10.0.0.2
 
 # Next steps:
 # -> Change IP address
@@ -218,9 +219,9 @@ nmcli connection modify bond1 ipv4.dns "192.168.1.1,10.0.0.2"
 # [copy ipv4: run it]
 # ===================
 # nmcli-cli-ipv4-copy -x bond1 br1
-Applying: nmcli connection modify br1 ipv4.addresses 192.168.1.101/24,192.168.1.102/24 ipv4.method manual
+Applying: nmcli connection modify br1 ipv4.addresses 192.168.1.101/24\,192.168.1.102/24 ipv4.method manual
 Applying: nmcli connection modify br1 ipv4.gateway 192.168.1.1
-Applying: nmcli connection modify br1 ipv4.dns "192.168.1.1,10.0.0.2"
+Applying: nmcli connection modify br1 ipv4.dns 192.168.1.1\,10.0.0.2
 
 # Next steps:
 # -> Change IP address
@@ -243,7 +244,8 @@ Applying: nmcli connection modify br1 ipv4.dns "192.168.1.1,10.0.0.2"
 ```
 Usage:
 
-    nmcli-cli-ipv6 [-n] [-x] NAME auto|dhcp|static|manual|link-local|disable|ignore IP_SUBNET [GATEWAY] [DNS]
+    nmcli-cli-ipv6 [-n] [-x] NAME auto|dhcp|link-local|disable|ignore
+    nmcli-cli-ipv6 [-n] [-x] NAME static|manual IP_SUBNET [GATEWAY] [DNS]
 
     Options:
         -n No interface check (Default: check interface)
@@ -270,9 +272,10 @@ Run examples:
 # [dhcp: echo only]
 # =================
 # nmcli-cli-ipv6 eno1 dhcp
-nmcli connection modify "eno1" ipv6.dns ""
-nmcli connection modify "eno1" ipv6.gateway ""
-nmcli connection modify "eno1" ipv6.addresses "" ipv6.method dhcp
+# echo only.
+nmcli connection modify eno1 ipv6.dns ''
+nmcli connection modify eno1 ipv6.gateway ''
+nmcli connection modify eno1 ipv6.addresses '' ipv6.method dhcp
 
 # Next steps:
 # -> Restart the interface:
@@ -289,7 +292,7 @@ nmcli connection modify "eno1" ipv6.addresses "" ipv6.method dhcp
 # ==========================================
 # nmcli-cli-ipv6 eno1 static 2001:db8:1::101/48,2001:db8:2::201/64
 # echo only.
-nmcli connection modify eno1 ipv6.addresses 2001:db8:1::101/48,2001:db8:2::201/64 ipv6.method manual
+nmcli connection modify eno1 ipv6.addresses 2001:db8:1::101/48\,2001:db8:2::201/64 ipv6.method manual
 
 # Next steps:
 # -> Restart the interface:
@@ -306,9 +309,9 @@ nmcli connection modify eno1 ipv6.addresses 2001:db8:1::101/48,2001:db8:2::201/6
 # ======================================
 # nmcli-cli-ipv6 -n eno1 disable
 # echo only.
-nmcli connection modify "eno1" ipv6.dns ""
-nmcli connection modify "eno1" ipv6.gateway ""
-nmcli connection modify "eno1" ipv6.addresses "" ipv6.method ignore
+nmcli connection modify eno1 ipv6.dns ''
+nmcli connection modify eno1 ipv6.gateway ''
+nmcli connection modify eno1 ipv6.addresses '' ipv6.method ignore
 
 # Next steps:
 # -> Restart the interface:
@@ -324,9 +327,9 @@ nmcli connection modify "eno1" ipv6.addresses "" ipv6.method ignore
 # [static: run it]
 # ================
 # nmcli-cli-ipv6 -x eno1 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
-Applying: nmcli connection modify "eno1" ipv6.addresses "2001:db8:1::101/48" ipv6.method manual
-Applying: nmcli connection modify "eno1" ipv6.gateway "2001:db8:1::1"
-Applying: nmcli connection modify "eno1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
+Applying: nmcli connection modify eno1 ipv6.addresses 2001:db8:1::101/48 ipv6.method manual
+Applying: nmcli connection modify eno1 ipv6.gateway 2001:db8:1::1
+Applying: nmcli connection modify eno1 ipv6.dns 2001:db8:1::1\,2001:db8:1::2
 
 # Next steps:
 # -> Restart the interface:
@@ -365,9 +368,9 @@ Run examples:
 # ======================
 # nmcli-cli-ipv6-copy eno1 bond1
 # echo only.
-nmcli connection modify bond1 ipv6.addresses 2001:db8:1::101/48,2001:db8:1::102/48 ipv6.method manual
-nmcli connection modify "bond1" ipv6.gateway "2001:db8:1::1"
-nmcli connection modify "bond1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
+nmcli connection modify bond1 ipv6.addresses 2001:db8:1::101/48\,2001:db8:1::102/48 ipv6.method manual
+nmcli connection modify bond1 ipv6.gateway 2001:db8:1::1
+nmcli connection modify bond1 ipv6.dns 2001:db8:1::1\,2001:db8:1::2
 
 # Next steps:
 # -> Change IP address
@@ -385,9 +388,9 @@ nmcli connection modify "bond1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 # [copy ipv6: run it]
 # ===================
 # nmcli-cli-ipv6-copy -x bond1 br1
-Applying: nmcli connection modify br1 ipv6.addresses 2001:db8:1::101/48,2001:db8:1::102/48 ipv6.method manual
+Applying: nmcli connection modify br1 ipv6.addresses 2001:db8:1::101/48\,2001:db8:1::102/48 ipv6.method manual
 Applying: nmcli connection modify br1 ipv6.gateway 2001:db8:1::1
-Applying: nmcli connection modify br1 ipv6.dns "2001:db8:1::1,2001:db8:1::2"
+Applying: nmcli connection modify br1 ipv6.dns 2001:db8:1::1\,2001:db8:1::2
 
 # Next steps:
 # -> Change IP address
@@ -480,7 +483,7 @@ ens2f0
 ```
 Usage:
 
-    nmcli-cli-autoconnect-set [-n] [-x] IF_NAME ON|OFF
+    nmcli-cli-autoconnect-set [-n] [-x] IF_NAME yes|no or on|off
 
     Options:
         -n No interface check (Default: check interface)
@@ -498,12 +501,12 @@ Run examples:
 # ===========================
 # nmcli-cli-autoconnect-set eno1 on
 # echo only.
-nmcli connection modify "eno1" connection.autoconnect "on"
+nmcli connection modify eno1 connection.autoconnect yes
 
 # [autoconnect off: run it]
 # =========================
 # nmcli-cli-autoconnect-set -x eno1 off
-Applying: nmcli connection modify "eno1" connection.autoconnect "off"
+Applying: nmcli connection modify eno1 connection.autoconnect no
 ```
 
 ### nmcli-cli-slave-list
@@ -559,11 +562,11 @@ Run examples:
 # ============================
 # nmcli-cli-bond-add bond1 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3 eno1 ens2f0
 # echo only.
-nmcli connection add type bond bond.options "mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3" autoconnect yes ipv4.method disabled ipv6.method ignore con-name "bond1" ifname "bond1"
-nmcli connection modify "eno1" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "eno1" master "bond1"
-nmcli connection modify "ens2f0" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "ens2f0" master "bond1"
+nmcli connection add type bond bond.options mode=802.3ad\,miimon=100\,updelay=500\,xmit_hash_policy=layer2+3 autoconnect yes ipv4.method disabled ipv6.method ignore con-name bond1 ifname bond1
+nmcli connection modify eno1 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname eno1 master bond1
+nmcli connection modify ens2f0 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname ens2f0 master bond1
 
 # Next steps:
 # -> Check bond status
@@ -582,11 +585,11 @@ nmcli connection add type bond-slave autoconnect yes ifname "ens2f0" master "bon
 # =======================================================
 # nmcli-cli-bond-add -n bond1 mode=active-backup dummy1 dummy2
 # echo only.
-nmcli connection add type bond bond.options "mode=active-backup" autoconnect yes ipv4.method disabled ipv6.method ignore con-name "bond1" ifname "bond1"
-nmcli connection modify "dummy1" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "dummy1" master "bond1"
-nmcli connection modify "dummy2" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "dummy2" master "bond1"
+nmcli connection add type bond bond.options mode=active-backup autoconnect yes ipv4.method disabled ipv6.method ignore con-name bond1 ifname bond1
+nmcli connection modify dummy1 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname dummy1 master bond1
+nmcli connection modify dummy2 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname dummy2 master bond1
 
 # Next steps:
 # -> Check bond status
@@ -604,16 +607,16 @@ nmcli connection add type bond-slave autoconnect yes ifname "dummy2" master "bon
 # [bond add: 3 interfaces + LACP + run it]
 # ========================================
 # nmcli-cli-bond-add -x bond1 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3 eno1 eno3 ens2f0
-Applying: nmcli connection add type bond bond.options "mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3" autoconnect yes ipv4.method disabled ipv6.method ignore con-name "bond1" ifname "bond1"
+Applying: nmcli connection add type bond bond.options mode=802.3ad\,miimon=100\,updelay=500\,xmit_hash_policy=layer2+3 autoconnect yes ipv4.method disabled ipv6.method ignore con-name bond1 ifname bond1
 Connection 'bond1' (eaf6cc9a-0a7a-42cd-8b01-febc62d2f63d) successfully added.
-Applying: nmcli connection modify "eno1" connection.autoconnect no
-Applying: nmcli connection add type bond-slave autoconnect yes ifname "eno1" master "bond1"
+Applying: nmcli connection modify eno1 connection.autoconnect no
+Applying: nmcli connection add type bond-slave autoconnect yes ifname eno1 master bond1
 Connection 'bond-slave-eno1' (5de09d50-69fc-4672-9a12-413424f16647) successfully added.
-Applying: nmcli connection modify "eno3" connection.autoconnect no
-Applying: nmcli connection add type bond-slave autoconnect yes ifname "eno3" master "bond1"
+Applying: nmcli connection modify eno3 connection.autoconnect no
+Applying: nmcli connection add type bond-slave autoconnect yes ifname eno3 master bond1
 Connection 'bond-slave-eno3' (5c8b4d7a-7771-460c-a514-3bb8819a6470) successfully added.
-Applying: nmcli connection modify "ens2f0" connection.autoconnect no
-Applying: nmcli connection add type bond-slave autoconnect yes ifname "ens2f0" master "bond1"
+Applying: nmcli connection modify ens2f0 connection.autoconnect no
+Applying: nmcli connection add type bond-slave autoconnect yes ifname ens2f0 master bond1
 Connection 'bond-slave-ens2f0' (305d3404-0f46-43b5-a087-e4e194d9597e) successfully added.
 
 # Next steps:
@@ -653,26 +656,26 @@ Run examples:
 # ===================
 # nmcli-cli-bond-delete bond1
 # echo only.
-nmcli connection delete "bond-slave-eno1"
-nmcli connection modify "eno1" connection.autoconnect yes
-nmcli connection delete "bond-slave-eno3"
-nmcli connection modify "eno3" connection.autoconnect yes
-nmcli connection delete "bond-slave-ens2f0"
-nmcli connection modify "ens2f0" connection.autoconnect yes
-nmcli connection delete "bond1"
+nmcli connection delete bond-slave-eno1
+nmcli connection modify eno1 connection.autoconnect yes
+nmcli connection delete bond-slave-eno3
+nmcli connection modify eno3 connection.autoconnect yes
+nmcli connection delete bond-slave-ens2f0
+nmcli connection modify ens2f0 connection.autoconnect yes
+nmcli connection delete bond1
 
 # [delete: run it]
 # ================
-Applying: nmcli connection delete "bond-slave-eno1"
+Applying: nmcli connection delete bond-slave-eno1
 Connection 'bond-slave-ens38' (5de09d50-69fc-4672-9a12-413424f16647) successfully deleted.
 Applying: nmcli connection modify eno1 connection.autoconnect yes
-Applying: nmcli connection delete "bond-slave-eno3"
+Applying: nmcli connection delete bond-slave-eno3
 Connection 'bond-slave-ens39' (5c8b4d7a-7771-460c-a514-3bb8819a6470) successfully deleted.
 Applying: nmcli connection modify eno3 connection.autoconnect yes
-Applying: nmcli connection delete "bond-slave-ens2f0"
+Applying: nmcli connection delete bond-slave-ens2f0
 Connection 'bond-slave-ens40' (305d3404-0f46-43b5-a087-e4e194d9597e) successfully deleted.
 Applying: nmcli connection modify ens2f0 connection.autoconnect yes
-Applying: nmcli connection delete "bond1"
+Applying: nmcli connection delete bond1
 Connection 'bond1' (eaf6cc9a-0a7a-42cd-8b01-febc62d2f63d) successfully deleted.
 ```
 
@@ -701,7 +704,7 @@ Run examples:
 # ===================================
 # nmcli-cli-vlan-add eno1.100 100 eno1
 # echo only.
-nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name "eno1.100" ifname "eno1.100" dev "eno1" id 100
+nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name eno1.100 ifname eno1.100 dev eno1 id 100
 
 # Next steps:
 # -> Check vlan status
@@ -719,7 +722,7 @@ nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name 
 # =====================================================
 # nmcli-cli-vlan-add -n vlan.100 100 dummy1
 # echo only.
-nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name "vlan.100" ifname "vlan.100" dev "dummy1" id 100
+nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name vlan.100 ifname vlan.100 dev dummy1 id 100
 
 # Next steps:
 # -> Check vlan status
@@ -735,7 +738,7 @@ nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name 
 # [vlan add: Bonding + VLAN ID 100 + run it]
 # ==========================================
 # nmcli-cli-vlan-add -x bond1.100 100 bond1
-Applying: nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name "bond1.100" ifname "bond1.100" dev "bond1" id 100
+Applying: nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name bond1.100 ifname bond1.100 dev bond1 id 100
 Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully added.
 
 # Next steps:
@@ -774,12 +777,12 @@ Run examples:
 # ========================
 # nmcli-cli-vlan-delete eno1.100
 # echo only.
-nmcli connection delete "eno1.100"
+nmcli connection delete eno1.100
 
 # [vlan delete: run it]
 # =====================
 # nmcli-cli-vlan-delete -x bond1.100
-Applying: nmcli connection delete "bond1.100"
+Applying: nmcli connection delete bond1.100
 Connection 'bond1.100' (2fe697fa-3ca9-4546-8d2d-b551ef47e8f4) successfully deleted.
 ```
 
@@ -808,8 +811,8 @@ Run examples:
 # =======================
 # nmcli-cli-bridge-add br1 eno1
 # echo only.
-nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name "br1" ifname "br1"
-nmcli connection modify "eno1" connection.slave-type bridge connection.master "br1"
+nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name br1 ifname br1
+nmcli connection modify eno1 connection.slave-type bridge connection.master br1
 
 # Next steps:
 # -> Check bridge status
@@ -823,8 +826,8 @@ nmcli connection modify "eno1" connection.slave-type bridge connection.master "b
 # ================================================
 # nmcli-cli-bridge-add -n br1 dummy1.100
 # echo only.
-nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name "br1" ifname "br1"
-nmcli connection modify "dummy1.100" connection.slave-type bridge connection.master "br1"
+nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name br1 ifname br1
+nmcli connection modify dummy1.100 connection.slave-type bridge connection.master br1
 
 # Next steps:
 # -> Check bridge status
@@ -837,9 +840,9 @@ nmcli connection modify "dummy1.100" connection.slave-type bridge connection.mas
 # [bridge add: Bonding + VLAN + run it]
 # =====================================
 # nmcli-cli-bridge-add -x br1.100 bond1.100
-Applying: nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name "br1.100" ifname "br1.100"
+Applying: nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name br1.100 ifname br1.100
 Connection 'br1.100' (0587e320-3c7c-4808-a93b-c55a5d7c657f) successfully added.
-Applying: nmcli connection modify "bond1.100" connection.slave-type bridge connection.master "br1.100"
+Applying: nmcli connection modify bond1.100 connection.slave-type bridge connection.master br1.100
 
 # Next steps:
 # -> Check bridge status
@@ -873,13 +876,13 @@ Run examples:
 # ==========================
 # nmcli-cli-bridge-delete -n br1
 # echo only.
-nmcli connection delete "br1"
+nmcli connection delete br1
 
 # [bridge delete: run it]
 # =======================
 # nmcli-cli-bridge-delete -x br1.100
-Applying: nmcli connection modify "bond1.100" connection.master "" connection.slave-type ""
-Applying: nmcli connection delete "br1.100"
+Applying: nmcli connection modify bond1.100 connection.master '' connection.slave-type ''
+Applying: nmcli connection delete br1.100
 Connection 'br1.100' (0587e320-3c7c-4808-a93b-c55a5d7c657f) successfully deleted.
 ```
 
@@ -896,34 +899,34 @@ Connection 'br1.100' (0587e320-3c7c-4808-a93b-c55a5d7c657f) successfully deleted
 ```
 # nmcli-cli-bond-add -n bond1 mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3 eno1 eno3 ens2f0
 # echo only.
-nmcli connection add type bond bond.options "mode=802.3ad,miimon=100,updelay=500,xmit_hash_policy=layer2+3" autoconnect yes ipv4.method disabled ipv6.method ignore con-name "bond1" ifname "bond1"
-nmcli connection modify "eno1" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "eno1" master "bond1"
-nmcli connection modify "eno3" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "eno3" master "bond1"
-nmcli connection modify "ens2f0" connection.autoconnect no
-nmcli connection add type bond-slave autoconnect yes ifname "ens2f0" master "bond1"
+nmcli connection add type bond bond.options mode=802.3ad\,miimon=100\,updelay=500\,xmit_hash_policy=layer2+3 autoconnect yes ipv4.method disabled ipv6.method ignore con-name bond1 ifname bond1
+nmcli connection modify eno1 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname eno1 master bond1
+nmcli connection modify eno3 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname eno3 master bond1
+nmcli connection modify ens2f0 connection.autoconnect no
+nmcli connection add type bond-slave autoconnect yes ifname ens2f0 master bond1
 
 # nmcli-cli-vlan-add -n bond1.100 100 bond1
 # echo only.
-nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name "bond1.100" ifname "bond1.100" dev "bond1" id 100
+nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name bond1.100 ifname bond1.100 dev bond1 id 100
 
 # nmcli-cli-bridge-add -n br1.100 bond1.100
 # echo only.
-nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name "br1.100" ifname "br1.100"
-nmcli connection modify "bond1.100" connection.slave-type bridge connection.master "br1.100"
+nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name br1.100 ifname br1.100
+nmcli connection modify bond1.100 connection.slave-type bridge connection.master br1.100
 
 # nmcli-cli-ipv4 -n br1.100 static 192.168.1.101/24 192.168.1.1 192.168.1.1,10.0.0.2
 # echo only.
-nmcli connection modify "br1.100" ipv4.addresses "192.168.1.101/24" ipv4.method manual
-nmcli connection modify "br1.100" ipv4.gateway "192.168.1.1"
-nmcli connection modify "br1.100" ipv4.dns "192.168.1.1,10.0.0.2"
+nmcli connection modify br1.100 ipv4.addresses 192.168.1.101/24 ipv4.method manual
+nmcli connection modify br1.100 ipv4.gateway 192.168.1.1
+nmcli connection modify br1.100 ipv4.dns 192.168.1.1\,10.0.0.2
 
 # nmcli-cli-ipv6 -n br1.100 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
 # echo only.
-nmcli connection modify "br1.100" ipv6.addresses "2001:db8:1::101/48" ipv6.method manual
-nmcli connection modify "br1.100" ipv6.gateway "2001:db8:1::1"
-nmcli connection modify "br1.100" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
+nmcli connection modify br1.100 ipv6.addresses 2001:db8:1::101/48 ipv6.method manual
+nmcli connection modify br1.100 ipv6.gateway 2001:db8:1::1
+nmcli connection modify br1.100 ipv6.dns 2001:db8:1::1\,2001:db8:1::2
 ```
 
 ### Example: Delete Bridge + VLAN + Bonding interface
@@ -933,22 +936,22 @@ nmcli connection modify "br1.100" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 ```
 # nmcli-cli-bridge-delete -n br1.100
 # echo only.
-nmcli connection modify "bond1.100" connection.master "" connection.slave-type ""
-nmcli connection delete "br1.100"
+nmcli connection modify bond1.100 connection.master '' connection.slave-type ''
+nmcli connection delete br1.100
 
 # nmcli-cli-vlan-delete -n bond1.100
 # echo only.
-nmcli connection delete "bond1.100"
+nmcli connection delete bond1.100
 
 # nmcli-cli-bond-delete -n bond1
 # echo only.
-nmcli connection delete "bond-slave-eno1"
-nmcli connection modify "eno1" connection.autoconnect yes
-nmcli connection delete "bond-slave-eno3"
-nmcli connection modify "eno3" connection.autoconnect yes
-nmcli connection delete "bond-slave-ens2f0"
-nmcli connection modify "ens2f0" connection.autoconnect yes
-nmcli connection delete "bond1"
+nmcli connection delete bond-slave-eno1
+nmcli connection modify eno1 connection.autoconnect yes
+nmcli connection delete bond-slave-eno3
+nmcli connection modify eno3 connection.autoconnect yes
+nmcli connection delete bond-slave-ens2f0
+nmcli connection modify ens2f0 connection.autoconnect yes
+nmcli connection delete bond1
 ```
 
 ## License
