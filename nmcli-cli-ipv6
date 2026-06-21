@@ -44,11 +44,17 @@ Usage:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
+    Note:
+        static replaces all IPv6 addresses.
+        Use comma-separated IP_SUBNET values to set secondary IP addresses.
+        The first IP_SUBNET is the primary IP address.
+
     Examples:
         $0 eno1 auto
         $0 eno1 dhcp
-        $0 eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:db8:1::1,2001:db8:1::2"
+        $0 eno1 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
         $0 eno1 static 2001:db8:1::101/48
+        $0 eno1 static 2001:db8:1::101/48,2001:db8:2::201/64
         $0 eno1 link-local
         $0 eno1 disable
 
