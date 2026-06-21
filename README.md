@@ -1,5 +1,8 @@
 # nmcli-cli
 
+![Tag](https://img.shields.io/github/tag/jfut/nmcli-cli.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 nmcli-cli is a command line tool that wraps `nmcli` to use for simple use cases.
 
 By default, each command prints shell-ready `nmcli` commands without applying
