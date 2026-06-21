@@ -44,10 +44,16 @@ Usage:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
+    Note:
+        static replaces all IPv4 addresses.
+        Use comma-separated IP_SUBNET values to set secondary IP addresses.
+        The first IP_SUBNET is the primary IP address.
+
     Examples:
         $0 eno1 dhcp
-        $0 eno1 static 192.168.1.101/24 192.168.1.1 "192.168.1.1,10.0.0.2"
+        $0 eno1 static 192.168.1.101/24 192.168.1.1 192.168.1.1,10.0.0.2
         $0 eno1 static 192.168.1.101/24
+        $0 eno1 static 192.168.1.101/24,10.0.0.201/23
         $0 eno1 disable
 
 _EOF_

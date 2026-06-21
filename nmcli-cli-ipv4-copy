@@ -35,9 +35,10 @@ echo_or_execute() {
 }
 
 nmcli_value() {
-    # Convert only nmcli's unset marker to an empty string.
+    # Convert nmcli's unset marker and multi-line values for reuse.
     local value=${1:-}
     [[ "${value}" == "--" ]] && value=""
+    value=${value//$'\n'/,}
     printf '%s' "${value}"
 }
 
@@ -54,6 +55,7 @@ Usage:
     Examples:
         $0 eno1 bond1
         $0 bond1 br1
+        $0 eno1 bond1 (copy primary and secondary addresses)
         $0 eno1 (show current configuration)
 
 _EOF_
@@ -84,7 +86,7 @@ ipv4_copy() {
     local SRC_IF_NAME=${1:-}
     local DEST_IF_NAME=${2:-${SRC_IF_NAME}}
 
-    # IP + Method
+    # IP + Method. ipv4.addresses may contain primary and secondary addresses.
     SRC_IP_SUBNET=$(nmcli_value "$(nmcli -g ipv4.addresses connection show "${SRC_IF_NAME}")")
     SRC_METHOD=$(nmcli_value "$(nmcli -g ipv4.method connection show "${SRC_IF_NAME}")")
     echo_or_execute nmcli connection modify "${DEST_IF_NAME}" ipv4.addresses "${SRC_IP_SUBNET}" ipv4.method "${SRC_METHOD}"

@@ -83,10 +83,16 @@ Usage:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
+    Note:
+        static replaces all IPv4 addresses.
+        Use comma-separated IP_SUBNET values to set secondary IP addresses.
+        The first IP_SUBNET is the primary IP address.
+
     Examples:
         nmcli-cli-ipv4 eno1 dhcp
-        nmcli-cli-ipv4 eno1 static 192.168.1.101/24 192.168.1.1 "192.168.1.1,10.0.0.2"
+        nmcli-cli-ipv4 eno1 static 192.168.1.101/24 192.168.1.1 192.168.1.1,10.0.0.2
         nmcli-cli-ipv4 eno1 static 192.168.1.101/24
+        nmcli-cli-ipv4 eno1 static 192.168.1.101/24,10.0.0.201/23
         nmcli-cli-ipv4 eno1 disable
 ```
 
@@ -100,6 +106,23 @@ Run examples:
 nmcli connection modify "eno1" ipv4.dns ""
 nmcli connection modify "eno1" ipv4.gateway ""
 nmcli connection modify eno1 ipv4.addresses "" ipv4.method auto
+
+# Next steps:
+# -> Restart the interface:
+#    nmcli-cli-restart "eno1"
+#
+# -> Create a bond interface:
+#    nmcli-cli-bond-add bond1 mode=... "eno1" "ens2f0"
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "eno1.100" 100 "eno1"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "eno1"
+
+# [static with secondary address: echo only]
+# ==========================================
+# nmcli-cli-ipv4 eno1 static 192.168.1.101/24,10.0.0.201/23
+# echo only.
+nmcli connection modify eno1 ipv4.addresses 192.168.1.101/24,10.0.0.201/23 ipv4.method manual
 
 # Next steps:
 # -> Restart the interface:
@@ -133,7 +156,7 @@ nmcli connection modify eno1 ipv4.addresses "" ipv4.method disabled
 
 # [static: run it]
 # ================
-# nmcli-cli-ipv4 -x eno1 static 192.168.1.101/24 192.168.1.1 "192.168.1.1,10.0.0.2"
+# nmcli-cli-ipv4 -x eno1 static 192.168.1.101/24 192.168.1.1 192.168.1.1,10.0.0.2
 Applying: nmcli connection modify "eno1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
 Applying: nmcli connection modify "eno1" ipv4.gateway "192.168.1.1"
 Applying: nmcli connection modify "eno1" ipv4.dns "192.168.1.1,10.0.0.2"
@@ -164,6 +187,7 @@ Usage:
     Examples:
         nmcli-cli-ipv4-copy eno1 bond1
         nmcli-cli-ipv4-copy bond1 br1
+        nmcli-cli-ipv4-copy eno1 bond1 (copy primary and secondary addresses)
         nmcli-cli-ipv4-copy eno1 (show current configuration)
 ```
 
@@ -174,7 +198,7 @@ Run examples:
 # ======================
 # nmcli-cli-ipv4-copy eno1 bond1
 # echo only.
-nmcli connection modify "bond1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
+nmcli connection modify bond1 ipv4.addresses 192.168.1.101/24,192.168.1.102/24 ipv4.method manual
 nmcli connection modify bond1 ipv4.gateway 192.168.1.1
 nmcli connection modify bond1 ipv4.dns "192.168.1.1,10.0.0.2"
 
@@ -194,7 +218,7 @@ nmcli connection modify bond1 ipv4.dns "192.168.1.1,10.0.0.2"
 # [copy ipv4: run it]
 # ===================
 # nmcli-cli-ipv4-copy -x bond1 br1
-Applying: nmcli connection modify "br1" ipv4.addresses "192.168.1.101/24" ipv4.method manual
+Applying: nmcli connection modify br1 ipv4.addresses 192.168.1.101/24,192.168.1.102/24 ipv4.method manual
 Applying: nmcli connection modify br1 ipv4.gateway 192.168.1.1
 Applying: nmcli connection modify br1 ipv4.dns "192.168.1.1,10.0.0.2"
 
@@ -225,11 +249,17 @@ Usage:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
+    Note:
+        static replaces all IPv6 addresses.
+        Use comma-separated IP_SUBNET values to set secondary IP addresses.
+        The first IP_SUBNET is the primary IP address.
+
     Examples:
         nmcli-cli-ipv6 eno1 auto
         nmcli-cli-ipv6 eno1 dhcp
-        nmcli-cli-ipv6 eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:db8:1::1,2001:db8:1::2"
+        nmcli-cli-ipv6 eno1 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
         nmcli-cli-ipv6 eno1 static 2001:db8:1::101/48
+        nmcli-cli-ipv6 eno1 static 2001:db8:1::101/48,2001:db8:2::201/64
         nmcli-cli-ipv6 eno1 link-local
         nmcli-cli-ipv6 eno1 disable
 ```
@@ -243,6 +273,23 @@ Run examples:
 nmcli connection modify "eno1" ipv6.dns ""
 nmcli connection modify "eno1" ipv6.gateway ""
 nmcli connection modify "eno1" ipv6.addresses "" ipv6.method dhcp
+
+# Next steps:
+# -> Restart the interface:
+#    nmcli-cli-restart "eno1"
+#
+# -> Create a bond interface:
+#    nmcli-cli-bond-add bond1 mode=... "eno1" "ens2f0"
+# -> Create a vlan interface:
+#    nmcli-cli-vlan-add "eno1.100" 100 "eno1"
+# -> Create a bridge interface:
+#    nmcli-cli-bridge-add br1 "eno1"
+
+# [static with secondary address: echo only]
+# ==========================================
+# nmcli-cli-ipv6 eno1 static 2001:db8:1::101/48,2001:db8:2::201/64
+# echo only.
+nmcli connection modify eno1 ipv6.addresses 2001:db8:1::101/48,2001:db8:2::201/64 ipv6.method manual
 
 # Next steps:
 # -> Restart the interface:
@@ -276,7 +323,7 @@ nmcli connection modify "eno1" ipv6.addresses "" ipv6.method ignore
 
 # [static: run it]
 # ================
-# nmcli-cli-ipv6 -x eno1 static 2001:db8:1::101/48 2001:db8:1::1 "2001:db8:1::1,2001:db8:1::2"
+# nmcli-cli-ipv6 -x eno1 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
 Applying: nmcli connection modify "eno1" ipv6.addresses "2001:db8:1::101/48" ipv6.method manual
 Applying: nmcli connection modify "eno1" ipv6.gateway "2001:db8:1::1"
 Applying: nmcli connection modify "eno1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
@@ -307,6 +354,7 @@ Usage:
     Examples:
         nmcli-cli-ipv6-copy eno1 bond1
         nmcli-cli-ipv6-copy bond1 br1
+        nmcli-cli-ipv6-copy eno1 bond1 (copy primary and secondary addresses)
         nmcli-cli-ipv6-copy eno1 (show current configuration)
 ```
 
@@ -317,7 +365,7 @@ Run examples:
 # ======================
 # nmcli-cli-ipv6-copy eno1 bond1
 # echo only.
-nmcli connection modify bond1 ipv6.addresses 2001:db8:1::101/48 ipv6.method manual
+nmcli connection modify bond1 ipv6.addresses 2001:db8:1::101/48,2001:db8:1::102/48 ipv6.method manual
 nmcli connection modify "bond1" ipv6.gateway "2001:db8:1::1"
 nmcli connection modify "bond1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 
@@ -337,7 +385,7 @@ nmcli connection modify "bond1" ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 # [copy ipv6: run it]
 # ===================
 # nmcli-cli-ipv6-copy -x bond1 br1
-Applying: nmcli connection modify br1 ipv6.addresses 2001:db8:1::101/48 ipv6.method manual
+Applying: nmcli connection modify br1 ipv6.addresses 2001:db8:1::101/48,2001:db8:1::102/48 ipv6.method manual
 Applying: nmcli connection modify br1 ipv6.gateway 2001:db8:1::1
 Applying: nmcli connection modify br1 ipv6.dns "2001:db8:1::1,2001:db8:1::2"
 
@@ -865,13 +913,13 @@ nmcli connection add type vlan ipv4.method disabled ipv6.method ignore con-name 
 nmcli connection add type bridge autoconnect yes ipv4.method disabled ipv6.method ignore bridge.stp no bridge.forward-delay 0 con-name "br1.100" ifname "br1.100"
 nmcli connection modify "bond1.100" connection.slave-type bridge connection.master "br1.100"
 
-# nmcli-cli-ipv4 -n br1.100 static 192.168.1.101/24 192.168.1.1 "192.168.1.1,10.0.0.2"
+# nmcli-cli-ipv4 -n br1.100 static 192.168.1.101/24 192.168.1.1 192.168.1.1,10.0.0.2
 # echo only.
 nmcli connection modify "br1.100" ipv4.addresses "192.168.1.101/24" ipv4.method manual
 nmcli connection modify "br1.100" ipv4.gateway "192.168.1.1"
 nmcli connection modify "br1.100" ipv4.dns "192.168.1.1,10.0.0.2"
 
-# nmcli-cli-ipv6 -n br1.100 static 2001:db8:1::101/48 2001:db8:1::1 "2001:db8:1::1,2001:db8:1::2"
+# nmcli-cli-ipv6 -n br1.100 static 2001:db8:1::101/48 2001:db8:1::1 2001:db8:1::1,2001:db8:1::2
 # echo only.
 nmcli connection modify "br1.100" ipv6.addresses "2001:db8:1::101/48" ipv6.method manual
 nmcli connection modify "br1.100" ipv6.gateway "2001:db8:1::1"
