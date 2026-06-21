@@ -954,6 +954,14 @@ nmcli connection modify ens2f0 connection.autoconnect yes
 nmcli connection delete bond1
 ```
 
+## Release
+
+1. Run `git tag -s vX.Y.Z -m vX.Y.Z`.
+2. Run `git push origin vX.Y.Z` and wait for the Release to be created.
+3. Edit the created Release.
+4. Press the `Generate release notes` button and edit the release notes.
+5. Press the `Update release` button.
+
 ## License
 
 MIT

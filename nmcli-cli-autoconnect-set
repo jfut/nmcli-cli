@@ -7,6 +7,7 @@
 # This software is released under the MIT License.
 # http://opensource.org/licenses/mit-license.php
 
+VERSION="1.2.0"
 ECHO_OR_EXECUTE="echo"
 
 print_command() {
@@ -35,19 +36,23 @@ echo_or_execute() {
 }
 
 usage() {
+    local COMMAND_NAME
+    COMMAND_NAME="$(basename "${0}")"
+
     cat << _EOF_
+${COMMAND_NAME} ${VERSION}
+
 Usage:
 
-    $0 [-n] [-x] IF_NAME yes|no or on|off
+    ${COMMAND_NAME} [-n] [-x] IF_NAME yes|no or on|off
 
     Options:
         -n No interface check (Default: check interface)
         -x Run command (Default: echo only)
 
     Examples:
-        $0 eno1 off
-        $0 bond1 on
-
+        ${COMMAND_NAME} eno1 off
+        ${COMMAND_NAME} bond1 on
 _EOF_
 }
 
