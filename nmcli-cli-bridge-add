@@ -1,11 +1,8 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Copyright 2019-2026 Jun Futagawa (jfut)
 #
 # nmcli-cli-bridge-add
-#
-# Copyright (c) 2019-2026 Jun Futagawa (jfut)
-#
-# This software is released under the MIT License.
-# http://opensource.org/licenses/mit-license.php
 
 VERSION="1.2.1"
 ECHO_OR_EXECUTE="echo"
