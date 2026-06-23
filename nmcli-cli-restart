@@ -4,7 +4,7 @@
 #
 # nmcli-cli-restart
 
-VERSION="1.2.1"
+VERSION="1.2.2"
 ECHO_OR_EXECUTE="echo"
 
 print_command() {
