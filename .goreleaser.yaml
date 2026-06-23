@@ -50,10 +50,11 @@ nfpms:
     package_name: nmcli-cli
     file_name_template: "{{ .ConventionalFileName }}"
     description: |-
-      nmcli-cli is a fast updater for ipset IP sets
+      nmcli-cli is a command-line tool that simplifies the use of 'nmcli'.
     maintainer: Jun Futagawa <jfut@integ.jp>
     license: MIT
     vendor: nmcli-cli project
+    homepage: https://github.com/jfut/nmcli-cli
     bindir: /usr/bin
     section: utils
     formats:
@@ -62,6 +63,9 @@ nfpms:
       - rpm
       - termux.deb
       - archlinux
+    rpm:
+      signature:
+        key_file: '{{ with index .Env "GPG_KEY_PATH" }}{{ . }}{{ end }}'
     contents:
       - src: nmcli-cli-*
         dst: /usr/bin/
