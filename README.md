@@ -5,6 +5,28 @@
 
 nmcli-cli is a command line tool that wraps `nmcli` to use for simple use cases.
 
+## Installation
+
+Download a release package from [Releases](https://github.com/jfut/nmcli-cli/releases), or use the RPM repository setup below on RHEL-compatible distributions.
+
+### Install RPM package with dnf-plugin-anyrepo
+
+Install [dnf-plugin-anyrepo](https://github.com/jfut/dnf-plugin-anyrepo), import the RPM GPG key, add this repository, then install the package with `dnf`.
+
+```bash
+rpm --import https://raw.githubusercontent.com/jfut/nmcli-cli/refs/heads/main/packaging/RPM-GPG-KEY-jfut-github
+dnf-anyrepo add https://github.com/jfut/nmcli-cli
+dnf install nmcli-cli
+```
+
+Upgrade the installed package with `dnf`.
+
+```bash
+dnf upgrade nmcli-cli
+```
+
+## Commands
+
 By default, each command prints shell-ready `nmcli` commands without applying
 changes. Use `-x` to run them.
 
